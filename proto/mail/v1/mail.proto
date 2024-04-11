@@ -1,0 +1,40 @@
+syntax="proto3";
+
+package auth.v1;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/dinhcanh303/mail-server/api/auth/v1";
+
+service AuthService {
+    rpc SignIn(LoginRequest) returns (LoginResponse){
+        option (google.api.http) = {
+            post: "/api/v1/login",
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Login service"
+            description: ""
+        };
+    }
+    rpc Logout(LogoutRequest) returns (LogoutResponse){
+        option (google.api.http) = {
+            get: "/api/v1/logout",
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Logout service"
+            description: ""
+        };
+    }
+}
+
+message LogoutRequest{}
+message LogoutResponse{}
+message LoginRequest{
+    string username = 1;
+    string password = 2;
+}
+message LoginResponse{}

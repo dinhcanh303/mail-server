@@ -1,0 +1,25 @@
+app:
+  name: 'reverse-proxy'
+  version: '1.0.0'
+
+http:
+  host: '0.0.0.0'
+  port: 5000
+
+grpc:
+  mail_host: '0.0.0.0'
+  mail_port: 5001
+
+request:
+  request_per_second: 50
+  request_burst: 100
+  request_max: 5
+  durations_second: 10
+
+logger:
+  log_level: 'debug'
+  log_dev: true
+  log_disable_caller: true
+  log_disable_stacktrace: true
+  log_encoding: 'console'
+  rollbar_env: 'reverse-proxy'
