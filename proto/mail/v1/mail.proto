@@ -1,22 +1,22 @@
 syntax="proto3";
 
-package auth.v1;
+package mail.v1;
 
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 
-option go_package = "github.com/dinhcanh303/mail-server/api/auth/v1";
+option go_package = "github.com/dinhcanh303/mail-server/api/mail/v1";
 
-service AuthService {
+service MailService {
     rpc SignIn(LoginRequest) returns (LoginResponse){
         option (google.api.http) = {
             post: "/api/v1/login",
             body: "*"
         };
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "Login service"
+            summary: "Login mail service"
             description: ""
         };
     }
@@ -25,16 +25,205 @@ service AuthService {
             get: "/api/v1/logout",
         };
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "Logout service"
+            summary: "Logout mail service"
+            description: ""
+        };
+    }
+    rpc CreateServer(CreateServerRequest) returns (CreateServerResponse){
+        option (google.api.http) = {
+            post: "/api/v1/servers",
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Create server mail service"
+            description: ""
+        };
+    }
+    rpc UpdateServer(UpdateServerRequest) returns (UpdateServerResponse){
+        option (google.api.http) = {
+            put: "/api/v1/servers/{server.id}",
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Update server mail service"
+            description: ""
+        };
+    }
+    rpc GetServer(GetServerRequest) returns (GetServerResponse){
+        option (google.api.http) = {
+            get: "/api/v1/servers/{id}",
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Get server mail service"
+            description: ""
+        };
+    }
+    rpc GetServers(GetServersRequest) returns (GetServersResponse){
+        option (google.api.http) = {
+            get: "/api/v1/servers",
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Get all server mail service"
+            description: ""
+        };
+    }
+    rpc DeleteServer(DeleteServerRequest) returns (DeleteServerResponse){
+        option (google.api.http) = {
+            delete: "/api/v1/servers/{id}",
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Delete server mail service"
+            description: ""
+        };
+    }
+    rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateResponse){
+        option (google.api.http) = {
+            post: "/api/v1/templates",
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Create template mail service"
+            description: ""
+        };
+    }
+    rpc UpdateTemplate(UpdateTemplateRequest) returns (UpdateTemplateResponse){
+        option (google.api.http) = {
+            put: "/api/v1/templates/{template.id}",
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Update template mail service"
+            description: ""
+        };
+    }
+    rpc GetTemplate(GetTemplateRequest) returns (GetTemplateResponse){
+        option (google.api.http) = {
+            get: "/api/v1/template/{id}",
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Get template mail service"
+            description: ""
+        };
+    }
+    rpc GetTemplates(GetTemplatesRequest) returns (GetTemplatesResponse){
+        option (google.api.http) = {
+            get: "/api/v1/templates",
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Get all template mail service"
+            description: ""
+        };
+    }
+    rpc DeleteTemplate(DeleteTemplateRequest) returns (DeleteTemplateResponse){
+        option (google.api.http) = {
+            delete: "/api/v1/templates/{id}",
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Delete template mail service"
             description: ""
         };
     }
 }
-
+message CreateTemplateRequest{
+    string name = 1;
+    string status = 2;
+    string html = 3;
+}
+message CreateTemplateResponse{
+    Template template = 1;
+}
+message UpdateTemplateRequest{
+    Template template = 1;
+}
+message UpdateTemplateResponse{
+    Template template = 1;
+}
+message GetTemplateRequest{
+    string id = 1;
+}
+message GetTemplateResponse{
+    Template template = 1;
+}
+message GetTemplatesRequest{
+    int32 limit = 1;
+    int32 offset = 2;
+}
+message GetTemplatesResponse{
+    repeated Template templates =1;
+}
+message DeleteTemplateRequest{
+    string id = 1;
+}
+message DeleteTemplateResponse{}
+message Template {
+    int64 id = 1;
+    string name = 2;
+    string status = 3;
+    string html = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+}
+message DeleteServerRequest {
+    int64 id = 1;
+}
+message DeleteServerResponse {}
+message GetServersRequest{
+    int32 limit = 1;
+    int32 offset = 2;
+}
+message GetServersResponse{
+    repeated Server servers = 1;
+}
+message GetServerRequest{
+    int64 id = 1;
+}
+message GetServerResponse{
+    Server server = 1;
+}
+message CreateServerRequest{
+    string name = 1;
+    string host = 2;
+    int64 port = 3;
+    string username = 4;
+    string password = 5;
+    string tls = 6;
+    bool skip_tls = 7;
+    int64 max_connections = 8;
+    int64 idle_timeout = 9;
+    int64 retries = 10;
+    int64 wait_timeout = 11;
+}
+message CreateServerResponse{
+    Server server = 1;
+}
+message UpdateServerRequest{
+    Server server = 1;
+}
+message UpdateServerResponse{
+    Server server = 1;
+}
+message Server {
+    int64 id = 1;
+    string name = 2;
+    string host = 3;
+    int64 port = 4;
+    string username = 5;
+    string password = 6;
+    string tls = 7;
+    bool skip_tls = 8;
+    int64 max_connections = 9;
+    int64 idle_timeout = 10;
+    int64 retries = 11;
+    int64 wait_timeout = 12;
+    google.protobuf.Timestamp created_at = 13;
+    google.protobuf.Timestamp updated_at = 14;
+}
 message LogoutRequest{}
 message LogoutResponse{}
 message LoginRequest{
     string username = 1;
     string password = 2;
 }
-message LoginResponse{}
+message LoginResponse{
+    string accessToken = 1;
+}

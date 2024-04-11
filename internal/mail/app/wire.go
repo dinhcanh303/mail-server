@@ -4,12 +4,15 @@
 package app
 
 import (
-	"github.com/dinhcanh303/mail-server/cmd/auth/config"
+	"github.com/dinhcanh303/mail-server/cmd/mail/config"
+	"github.com/dinhcanh303/mail-server/internal/mail/app/router"
+	"github.com/dinhcanh303/mail-server/internal/mail/infras/repo"
+	"github.com/dinhcanh303/mail-server/internal/mail/usecases/server"
+	"github.com/dinhcanh303/mail-server/internal/mail/usecases/template"
 
 	configs "github.com/dinhcanh303/mail-server/pkg/config"
 	"github.com/dinhcanh303/mail-server/pkg/postgres"
 	"github.com/dinhcanh303/mail-server/pkg/rabbitmq"
-	"github.com/dinhcanh303/mail-server/pkg/rabbitmq/publisher"
 	"github.com/dinhcanh303/mail-server/pkg/redis"
 	"github.com/dinhcanh303/mail-server/pkg/token"
 	"github.com/google/wire"
@@ -27,10 +30,14 @@ func InitApp(
 	panic(wire.Build(
 		New,
 		dbEngineFunc,
-		jwtFunc,
-		rabbitMQFunc,
+		// jwtFunc,
+		// rabbitMQFunc,
 		redisEngineFunc,
-		publisher.EventPublisherSet,
+		router.MailGRPCServerSet,
+		server.UseCaseSet,
+		template.UseCaseSet,
+		repo.ServerRepoSet,
+		repo.TemplateRepoSet,
 	))
 }
 func dbEngineFunc(url postgres.DBConnString) (postgres.DBEngine, func(), error) {

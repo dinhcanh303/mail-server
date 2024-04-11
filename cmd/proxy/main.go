@@ -28,7 +28,7 @@ func newGateway(
 	mux := gatewayRuntime.NewServeMux(opts...)
 	dialOpts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-	err := v1m.RegisterGroupServiceHandlerFromEndpoint(ctx, mux, mailEndpoint, dialOpts)
+	err := v1m.RegisterMailServiceHandlerFromEndpoint(ctx, mux, mailEndpoint, dialOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,9 @@ func main() {
 		slog.Error("failed to create a new gateway", err)
 	}
 	mux.Handle("/", gw)
-
+	// server swagger
+	fs := http.FileServer(http.Dir("swagger"))
+	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
 	s := &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 		Handler: allowCORS(withLogger(mux)),

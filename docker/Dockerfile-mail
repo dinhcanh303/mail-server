@@ -16,9 +16,7 @@ RUN go build -tags migrate -o /bin/app ./cmd/mail
 # Step 3: Final
 FROM scratch
 
-EXPOSE 5007
-EXPOSE 5008
-
+EXPOSE 5001
 # GOPATH for scratch images is /
 COPY --from=builder /app/cmd/mail/config.yml /
 COPY --from=builder /app/db/migrations /db/migrations

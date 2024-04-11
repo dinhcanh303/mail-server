@@ -13,8 +13,8 @@ services:
     environment:
       APP_NAME: 'proxy-service in docker'
       IN_DOCKER: "true"
-      PG_URL: postgres://postgres:123456@postgres-master/postgres?sslmode=disable
-      PG_REP_URL: postgres://postgres:123456@postgres-slave:5432/postgres?sslmode=disable
+      PG_URL: postgres://postgres:123456@postgres/postgres?sslmode=disable
+      PG_REP_URL: postgres://postgres:123456@postgres:5432/postgres?sslmode=disable
       GRPC_MAIL_HOST: 'mail'
       GRPC_MAIL_PORT: 5001
     ports:
@@ -35,8 +35,8 @@ services:
     environment:
       APP_NAME: 'mail-service in docker'
       IN_DOCKER: "true"
-      PG_URL: postgres://postgres:123456@postgres-master:5432/postgres?sslmode=disable
-      PG_REP_URL: postgres://postgres:123456@postgres-slave:5432/postgres?sslmode=disable
+      PG_URL: postgres://postgres:123456@postgres:5432/postgres?sslmode=disable
+      PG_REP_URL: postgres://postgres:123456@postgres:5432/postgres?sslmode=disable
     ports:
       - 5001:5001
     networks:
