@@ -1,0 +1,40 @@
+@layer tailwind-base, primereact, tailwind-utilities;
+
+@layer tailwind-base {
+  @tailwind base;
+}
+
+@layer tailwind-utilities {
+  @tailwind components;
+  @tailwind utilities;
+}
+.p-card .p-card-content {
+  padding: 0rem 0;
+}
+.p-overlaypanel .p-overlaypanel-content {
+  padding: 0rem;
+}
+.p-tabmenu .p-tabmenu-nav {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-width: 0 0 2px 0;
+}
+.p-tabmenu .p-tabmenu-nav .p-tabmenuitem .p-menuitem-link {
+  background: none
+}
+.p-tabview .p-tabview-nav {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-width: 0 0 2px 0;
+}
+.p-tabview .p-tabview-nav .p-unselectable-text .p-tabview-nav-link {
+  background: none
+}
+.p-tabview-panels {
+  background: none;
+  border-width: 0 0 2px 0;
+}
+.PhoneInputInput:focus {
+  outline: none;
+  border: none;
+}
