@@ -10,6 +10,7 @@ import (
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/template"
 	"github.com/google/wire"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -62,25 +63,52 @@ func (m *mailGRPCServer) Logout(ctx context.Context, request *v1.LogoutRequest) 
 	return &v1.LogoutResponse{}, nil
 }
 func (m *mailGRPCServer) CreateServer(ctx context.Context, request *v1.CreateServerRequest) (*v1.CreateServerResponse, error) {
-	result, err := m.ucServer.CreateServer(ctx, &domain.Server{
-		Name:           request.Name,
-		Host:           request.Host,
-		Port:           request.Port,
-		UserName:       request.Username,
-		Password:       request.Password,
-		TLS:            domain.TLSType(request.Tls),
-		SkipTLSVerify:  request.SkipTls,
-		MaxConnections: request.MaxConnections,
-		Retries:        request.Retries,
-		IdleTimeout:    request.IdleTimeout,
-		WaitTimeout:    request.WaitTimeout,
-	})
+	model := domain.NewServer(request.Name,
+		request.Host,
+		request.Port,
+		request.Username,
+		request.Password,
+		request.Tls,
+		request.SkipTls,
+		request.MaxConnections,
+		request.Retries,
+		request.IdleTimeout,
+		request.WaitTimeout)
+	result, err := m.ucServer.CreateServer(ctx, model)
 	if err != nil {
 		return nil, errors.Wrap(err, "ucServer.CreateServer failed")
 	}
 	return &v1.CreateServerResponse{
 		Server: entityToProtobuf(result),
 	}, nil
+}
+func (m *mailGRPCServer) GetServer(ctx context.Context, request *v1.GetServerRequest) (*v1.GetServerResponse, error) {
+	result, err := m.ucServer.GetServer(ctx, request.Id)
+	if err != nil {
+		return nil, errors.Wrap(err, "ucServer.GetServer failed")
+	}
+	return &v1.GetServerResponse{
+		Server: entityToProtobuf(result),
+	}, nil
+}
+func (m *mailGRPCServer) GetServers(ctx context.Context, request *v1.GetServersRequest) (*v1.GetServersResponse, error) {
+	results, err := m.ucServer.GetServers(ctx, request.Limit, request.Offset)
+	if err != nil {
+		return nil, errors.Wrap(err, "ucServer.GetServers failed")
+	}
+	return &v1.GetServersResponse{
+		Servers: lo.Map(results, func(item *domain.Server, _ int) *v1.Server {
+			return entityToProtobuf(item)
+		}),
+	}, nil
+}
+
+func (m *mailGRPCServer) DeleteServer(ctx context.Context, request *v1.DeleteServerRequest) (*v1.DeleteServerResponse, error) {
+	err := m.ucServer.DeleteServer(ctx, request.Id)
+	if err != nil {
+		return nil, errors.Wrap(err, "ucServer.DeleteServer failed")
+	}
+	return &v1.DeleteServerResponse{}, nil
 }
 
 func (m *mailGRPCServer) UpdateServer(ctx context.Context, request *v1.UpdateServerRequest) (*v1.UpdateServerResponse, error) {
@@ -105,6 +133,57 @@ func (m *mailGRPCServer) UpdateServer(ctx context.Context, request *v1.UpdateSer
 		Server: entityToProtobuf(result),
 	}, nil
 }
+func (m *mailGRPCServer) CreateTemplate(ctx context.Context, request *v1.CreateTemplateRequest) (*v1.CreateTemplateResponse, error) {
+	model := domain.NewTemplate(request.Name, request.Status, request.Html)
+	result, err := m.ucTemp.CreateTemplate(ctx, model)
+	if err != nil {
+		return nil, errors.Wrap(err, "ucTemp.CreateTemplate failed")
+	}
+	return &v1.CreateTemplateResponse{
+		Template: entityTemplateToProtobuf(result),
+	}, nil
+}
+func (m *mailGRPCServer) GetTemplate(ctx context.Context, request *v1.GetTemplateRequest) (*v1.GetTemplateResponse, error) {
+	result, err := m.ucTemp.GetTemplate(ctx, request.Id)
+	if err != nil {
+		return nil, errors.Wrap(err, "ucTemp.GetTemplate failed")
+	}
+	return &v1.GetTemplateResponse{
+		Template: entityTemplateToProtobuf(result),
+	}, nil
+}
+func (m *mailGRPCServer) GetTemplates(ctx context.Context, request *v1.GetTemplatesRequest) (*v1.GetTemplatesResponse, error) {
+	results, err := m.ucTemp.GetTemplates(ctx, request.Limit, request.Offset)
+	if err != nil {
+		return nil, errors.Wrap(err, "ucTemp.GetTemplates failed")
+	}
+	return &v1.GetTemplatesResponse{
+		Templates: lo.Map(results, func(item *domain.Template, _ int) *v1.Template {
+			return entityTemplateToProtobuf(item)
+		}),
+	}, nil
+}
+func (m *mailGRPCServer) DeleteTemplate(ctx context.Context, request *v1.DeleteTemplateRequest) (*v1.DeleteTemplateResponse, error) {
+	err := m.ucTemp.DeleteTemplate(ctx, request.Id)
+	if err != nil {
+		return nil, errors.Wrap(err, "ucTemp.DeleteTemplate failed")
+	}
+	return &v1.DeleteTemplateResponse{}, nil
+}
+func (m *mailGRPCServer) UpdateTemplate(ctx context.Context, request *v1.UpdateTemplateRequest) (*v1.UpdateTemplateResponse, error) {
+	result, err := m.ucTemp.UpdateTemplate(ctx, &domain.Template{
+		ID:     request.Template.Id,
+		Name:   request.Template.Name,
+		Status: request.Template.Status,
+		Html:   request.Template.Html,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "ucTemp.UpdateTemplate failed")
+	}
+	return &v1.UpdateTemplateResponse{
+		Template: entityTemplateToProtobuf(result),
+	}, nil
+}
 
 func entityToProtobuf(entity *domain.Server) *v1.Server {
 	return &v1.Server{
@@ -122,5 +201,15 @@ func entityToProtobuf(entity *domain.Server) *v1.Server {
 		WaitTimeout:    entity.WaitTimeout,
 		CreatedAt:      timestamppb.New(entity.CreatedAt),
 		UpdatedAt:      timestamppb.New(entity.UpdatedAt),
+	}
+}
+func entityTemplateToProtobuf(entity *domain.Template) *v1.Template {
+	return &v1.Template{
+		Id:        entity.ID,
+		Name:      entity.Name,
+		Status:    entity.Status,
+		Html:      entity.Html,
+		CreatedAt: timestamppb.New(entity.CreatedAt),
+		UpdatedAt: timestamppb.New(entity.UpdatedAt),
 	}
 }

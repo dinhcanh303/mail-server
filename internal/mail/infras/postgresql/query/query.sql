@@ -60,3 +60,27 @@ WHERE id = sqlc.arg(id) RETURNING *;
 
 -- name: DeleteTemplate :exec
 DELETE FROM mail.templates WHERE id = $1;
+
+
+-- name: CreateClient :one
+INSERT INTO mail.clients (
+    name,
+    server_id,
+    template_id
+) VALUES ($1,$2,$3) RETURNING *;
+
+-- name: GetClient :one
+SELECT * FROM mail.clients WHERE id = $1;
+
+-- name: GetClients :many
+SELECT * FROM mail.clients LIMIT $1 OFFSET $2;
+
+-- name: UpdateClient :one
+UPDATE mail.clients SET 
+    name = COALESCE(sqlc.narg(name),name),
+    server_id = COALESCE(sqlc.narg(server_id),server_id),
+    template_id = COALESCE(sqlc.narg(template_id),template_id)
+WHERE id = sqlc.arg(id) RETURNING *;
+
+-- name: DeleteClient :exec
+DELETE FROM mail.clients WHERE id = $1;

@@ -48,7 +48,7 @@ func (t *templateRepo) CreateTemplate(ctx context.Context, template *domain.Temp
 	if err != nil {
 		return nil, errors.Wrap(err, "serverRepo.CreateServer failed")
 	}
-	return repoTemplateToDomainTemplate(result), nil
+	return repoTemplateToDomainTemplate(result), tx.Commit()
 }
 
 // DeleteTemplate implements template.UseCase.
@@ -118,7 +118,10 @@ func (t *templateRepo) UpdateTemplate(ctx context.Context, template *domain.Temp
 			Valid:  template.Status != "",
 		},
 	})
-	return repoTemplateToDomainTemplate(result), nil
+	if err != nil {
+		return nil, errors.Wrap(err, "serverRepo.UpdateServer failed")
+	}
+	return repoTemplateToDomainTemplate(result), tx.Commit()
 }
 
 func repoTemplateToDomainTemplate(result postgresql.MailTemplate) *domain.Template {

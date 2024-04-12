@@ -98,7 +98,7 @@ service MailService {
     }
     rpc GetTemplate(GetTemplateRequest) returns (GetTemplateResponse){
         option (google.api.http) = {
-            get: "/api/v1/template/{id}",
+            get: "/api/v1/templates/{id}",
         };
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
             summary: "Get template mail service"
@@ -139,7 +139,7 @@ message UpdateTemplateResponse{
     Template template = 1;
 }
 message GetTemplateRequest{
-    string id = 1;
+    int64 id = 1;
 }
 message GetTemplateResponse{
     Template template = 1;
@@ -152,7 +152,7 @@ message GetTemplatesResponse{
     repeated Template templates =1;
 }
 message DeleteTemplateRequest{
-    string id = 1;
+    int64 id = 1;
 }
 message DeleteTemplateResponse{}
 message Template {

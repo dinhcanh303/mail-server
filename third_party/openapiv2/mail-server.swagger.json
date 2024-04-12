@@ -297,37 +297,6 @@
         ]
       }
     },
-    "/api/v1/template/{id}": {
-      "get": {
-        "summary": "Get template mail service",
-        "operationId": "MailService_GetTemplate",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1GetTemplateResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "MailService"
-        ]
-      }
-    },
     "/api/v1/templates": {
       "get": {
         "summary": "Get all template mail service",
@@ -399,6 +368,36 @@
       }
     },
     "/api/v1/templates/{id}": {
+      "get": {
+        "summary": "Get template mail service",
+        "operationId": "MailService_GetTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "MailService"
+        ]
+      },
       "delete": {
         "summary": "Delete template mail service",
         "operationId": "MailService_DeleteTemplate",
@@ -421,7 +420,8 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "format": "int64"
           }
         ],
         "tags": [

@@ -42,7 +42,7 @@ func (s *serverRepo) CreateServer(ctx context.Context, server *domain.Server) (*
 		Password: server.Password,
 		Tls: sql.NullString{
 			String: string(server.TLS),
-			Valid:  string(server.TLS) == "",
+			Valid:  string(server.TLS) != "",
 		},
 		SkipTls: sql.NullBool{
 			Bool:  server.SkipTLSVerify,

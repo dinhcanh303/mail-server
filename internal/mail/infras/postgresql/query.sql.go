@@ -10,6 +10,34 @@ import (
 	"database/sql"
 )
 
+const createClient = `-- name: CreateClient :one
+INSERT INTO mail.clients (
+    name,
+    server_id,
+    template_id
+) VALUES ($1,$2,$3) RETURNING id, name, server_id, template_id, created_at, updated_at
+`
+
+type CreateClientParams struct {
+	Name       string `json:"name"`
+	ServerID   int64  `json:"server_id"`
+	TemplateID int64  `json:"template_id"`
+}
+
+func (q *Queries) CreateClient(ctx context.Context, arg CreateClientParams) (MailClient, error) {
+	row := q.db.QueryRowContext(ctx, createClient, arg.Name, arg.ServerID, arg.TemplateID)
+	var i MailClient
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.ServerID,
+		&i.TemplateID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createServer = `-- name: CreateServer :one
 INSERT INTO mail.servers (
     name,
@@ -102,6 +130,15 @@ func (q *Queries) CreateTemplate(ctx context.Context, arg CreateTemplateParams) 
 	return i, err
 }
 
+const deleteClient = `-- name: DeleteClient :exec
+DELETE FROM mail.clients WHERE id = $1
+`
+
+func (q *Queries) DeleteClient(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteClient, id)
+	return err
+}
+
 const deleteServer = `-- name: DeleteServer :exec
 DELETE FROM mail.servers WHERE id = $1
 `
@@ -118,6 +155,63 @@ DELETE FROM mail.templates WHERE id = $1
 func (q *Queries) DeleteTemplate(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteTemplate, id)
 	return err
+}
+
+const getClient = `-- name: GetClient :one
+SELECT id, name, server_id, template_id, created_at, updated_at FROM mail.clients WHERE id = $1
+`
+
+func (q *Queries) GetClient(ctx context.Context, id int64) (MailClient, error) {
+	row := q.db.QueryRowContext(ctx, getClient, id)
+	var i MailClient
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.ServerID,
+		&i.TemplateID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getClients = `-- name: GetClients :many
+SELECT id, name, server_id, template_id, created_at, updated_at FROM mail.clients LIMIT $1 OFFSET $2
+`
+
+type GetClientsParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) GetClients(ctx context.Context, arg GetClientsParams) ([]MailClient, error) {
+	rows, err := q.db.QueryContext(ctx, getClients, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MailClient
+	for rows.Next() {
+		var i MailClient
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.ServerID,
+			&i.TemplateID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getServer = `-- name: GetServer :one
@@ -248,6 +342,40 @@ func (q *Queries) GetTemplates(ctx context.Context, arg GetTemplatesParams) ([]M
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateClient = `-- name: UpdateClient :one
+UPDATE mail.clients SET 
+    name = COALESCE($1,name),
+    server_id = COALESCE($2,server_id),
+    template_id = COALESCE($3,template_id)
+WHERE id = $4 RETURNING id, name, server_id, template_id, created_at, updated_at
+`
+
+type UpdateClientParams struct {
+	Name       sql.NullString `json:"name"`
+	ServerID   sql.NullInt64  `json:"server_id"`
+	TemplateID sql.NullInt64  `json:"template_id"`
+	ID         int64          `json:"id"`
+}
+
+func (q *Queries) UpdateClient(ctx context.Context, arg UpdateClientParams) (MailClient, error) {
+	row := q.db.QueryRowContext(ctx, updateClient,
+		arg.Name,
+		arg.ServerID,
+		arg.TemplateID,
+		arg.ID,
+	)
+	var i MailClient
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.ServerID,
+		&i.TemplateID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const updateServer = `-- name: UpdateServer :one

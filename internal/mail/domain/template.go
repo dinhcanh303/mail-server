@@ -10,3 +10,14 @@ type Template struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+func NewTemplate(name string, status string, html string) *Template {
+	if status == "" {
+		status = "active"
+	}
+	return &Template{
+		Name:   name,
+		Status: status,
+		Html:   html,
+	}
+}
