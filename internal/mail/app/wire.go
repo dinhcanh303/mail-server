@@ -7,6 +7,7 @@ import (
 	"github.com/dinhcanh303/mail-server/cmd/mail/config"
 	"github.com/dinhcanh303/mail-server/internal/mail/app/router"
 	"github.com/dinhcanh303/mail-server/internal/mail/infras/repo"
+	"github.com/dinhcanh303/mail-server/internal/mail/usecases/client"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/server"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/template"
 
@@ -36,8 +37,10 @@ func InitApp(
 		router.MailGRPCServerSet,
 		server.UseCaseSet,
 		template.UseCaseSet,
+		client.UseCaseSet,
 		repo.ServerRepoSet,
 		repo.TemplateRepoSet,
+		repo.ClientRepoSet,
 	))
 }
 func dbEngineFunc(url postgres.DBConnString) (postgres.DBEngine, func(), error) {

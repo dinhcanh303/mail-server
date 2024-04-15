@@ -10,6 +10,7 @@ import (
 	"github.com/dinhcanh303/mail-server/cmd/mail/config"
 	"github.com/dinhcanh303/mail-server/internal/mail/app/router"
 	"github.com/dinhcanh303/mail-server/internal/mail/infras/repo"
+	"github.com/dinhcanh303/mail-server/internal/mail/usecases/client"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/server"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/template"
 	"github.com/dinhcanh303/mail-server/pkg/config"
@@ -37,8 +38,10 @@ func InitApp(cfg *config.Config, cfg2 *configs.Redis, dbConnStr postgres.DBConnS
 	useCase := server.NewUseCase(redisEngine, serverRepo)
 	templateRepo := repo.NewTemplateRepo(dbEngine)
 	templateUseCase := template.NewUseCase(redisEngine, templateRepo)
-	mailServiceServer := router.NewMailGRPCServer(grpcServer, templateUseCase, useCase, cfg)
-	app := New(cfg, dbEngine, useCase, templateUseCase, mailServiceServer)
+	clientRepo := repo.NewClientRepo(dbEngine)
+	clientUseCase := client.NewUseCase(redisEngine, clientRepo)
+	mailServiceServer := router.NewMailGRPCServer(grpcServer, templateUseCase, useCase, clientUseCase, cfg)
+	app := New(cfg, dbEngine, useCase, templateUseCase, clientUseCase, mailServiceServer)
 	return app, func() {
 		cleanup2()
 		cleanup()

@@ -123,6 +123,134 @@ service MailService {
             description: ""
         };
     }
+    rpc CreateClient(CreateClientRequest) returns (CreateClientResponse){
+        option (google.api.http) = {
+            post: "/api/v1/clients",
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Create client mail service"
+            description: ""
+        };
+    }
+    rpc UpdateClient(UpdateClientRequest) returns (UpdateClientResponse){
+        option (google.api.http) = {
+            put: "/api/v1/clients/{client.id}",
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Update client mail service"
+            description: ""
+        };
+    }
+    rpc GetClient(GetClientRequest) returns (GetClientResponse){
+        option (google.api.http) = {
+            get: "/api/v1/clients/{id}",
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Get client mail service"
+            description: ""
+        };
+    }
+    rpc GetClients(GetClientsRequest) returns (GetClientsResponse){
+        option (google.api.http) = {
+            get: "/api/v1/clients",
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Get all client mail service"
+            description: ""
+        };
+    }
+    rpc DeleteClient(DeleteClientRequest) returns (DeleteClientResponse){
+        option (google.api.http) = {
+            delete: "/api/v1/clients/{id}",
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Delete client mail service"
+            description: ""
+        };
+    }
+    rpc HandleSendMail(HandleSendMailRequest) returns (HandleSendMailResponse){
+        option (google.api.http) = {
+            post: "/api/v1/mails",
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Handle send mail in mail service"
+            description: ""
+        };
+    }
+    rpc TestSendMail(TestSendMailRequest) returns (TestSendMailResponse){
+        option (google.api.http) = {
+            post: "/api/v1/mails/test",
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Test send mail in mail service"
+            description: ""
+        };
+    }
+}
+message TestSendMailRequest{
+    string name = 1;
+    string host = 2;
+    int64 port = 3;
+    string username = 4;
+    string password = 5;
+    string tls = 6;
+    bool skip_tls = 7;
+    int64 max_connections = 8;
+    int64 idle_timeout = 9;
+    int64 retries = 10;
+    string to = 11;
+    string content = 12;
+}
+message TestSendMailResponse{}
+message HandleSendMailRequest {
+    int32 client_id = 1;
+    string from = 2;
+    string to = 3;
+}
+message HandleSendMailResponse{}
+message CreateClientRequest {
+    string name = 1;
+    int64 server_id = 2;
+    int64 template_id = 3;
+}
+message CreateClientResponse {
+    Client client = 1;
+}
+message UpdateClientRequest {
+    Client client = 1;
+}
+message UpdateClientResponse {
+    Client client = 1;
+}
+message GetClientRequest {
+    int64 id = 1;
+}
+message GetClientResponse {
+    Client client = 1;
+}
+message GetClientsRequest {
+    int32 limit = 1;
+    int32 offset = 2;
+}
+message GetClientsResponse {
+    repeated Client clients = 1;
+}
+message DeleteClientRequest {
+    int64 id = 1;
+}
+message DeleteClientResponse{}
+message Client {
+    int64 id = 1;
+    string name = 2;
+    int64 server_id = 3;
+    int64 template_id = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+
 }
 message CreateTemplateRequest{
     string name = 1;

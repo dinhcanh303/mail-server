@@ -31,6 +31,13 @@ const (
 	MailService_GetTemplate_FullMethodName    = "/mail.v1.MailService/GetTemplate"
 	MailService_GetTemplates_FullMethodName   = "/mail.v1.MailService/GetTemplates"
 	MailService_DeleteTemplate_FullMethodName = "/mail.v1.MailService/DeleteTemplate"
+	MailService_CreateClient_FullMethodName   = "/mail.v1.MailService/CreateClient"
+	MailService_UpdateClient_FullMethodName   = "/mail.v1.MailService/UpdateClient"
+	MailService_GetClient_FullMethodName      = "/mail.v1.MailService/GetClient"
+	MailService_GetClients_FullMethodName     = "/mail.v1.MailService/GetClients"
+	MailService_DeleteClient_FullMethodName   = "/mail.v1.MailService/DeleteClient"
+	MailService_HandleSendMail_FullMethodName = "/mail.v1.MailService/HandleSendMail"
+	MailService_TestSendMail_FullMethodName   = "/mail.v1.MailService/TestSendMail"
 )
 
 // MailServiceClient is the client API for MailService service.
@@ -49,6 +56,13 @@ type MailServiceClient interface {
 	GetTemplate(ctx context.Context, in *GetTemplateRequest, opts ...grpc.CallOption) (*GetTemplateResponse, error)
 	GetTemplates(ctx context.Context, in *GetTemplatesRequest, opts ...grpc.CallOption) (*GetTemplatesResponse, error)
 	DeleteTemplate(ctx context.Context, in *DeleteTemplateRequest, opts ...grpc.CallOption) (*DeleteTemplateResponse, error)
+	CreateClient(ctx context.Context, in *CreateClientRequest, opts ...grpc.CallOption) (*CreateClientResponse, error)
+	UpdateClient(ctx context.Context, in *UpdateClientRequest, opts ...grpc.CallOption) (*UpdateClientResponse, error)
+	GetClient(ctx context.Context, in *GetClientRequest, opts ...grpc.CallOption) (*GetClientResponse, error)
+	GetClients(ctx context.Context, in *GetClientsRequest, opts ...grpc.CallOption) (*GetClientsResponse, error)
+	DeleteClient(ctx context.Context, in *DeleteClientRequest, opts ...grpc.CallOption) (*DeleteClientResponse, error)
+	HandleSendMail(ctx context.Context, in *HandleSendMailRequest, opts ...grpc.CallOption) (*HandleSendMailResponse, error)
+	TestSendMail(ctx context.Context, in *TestSendMailRequest, opts ...grpc.CallOption) (*TestSendMailResponse, error)
 }
 
 type mailServiceClient struct {
@@ -167,6 +181,69 @@ func (c *mailServiceClient) DeleteTemplate(ctx context.Context, in *DeleteTempla
 	return out, nil
 }
 
+func (c *mailServiceClient) CreateClient(ctx context.Context, in *CreateClientRequest, opts ...grpc.CallOption) (*CreateClientResponse, error) {
+	out := new(CreateClientResponse)
+	err := c.cc.Invoke(ctx, MailService_CreateClient_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mailServiceClient) UpdateClient(ctx context.Context, in *UpdateClientRequest, opts ...grpc.CallOption) (*UpdateClientResponse, error) {
+	out := new(UpdateClientResponse)
+	err := c.cc.Invoke(ctx, MailService_UpdateClient_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mailServiceClient) GetClient(ctx context.Context, in *GetClientRequest, opts ...grpc.CallOption) (*GetClientResponse, error) {
+	out := new(GetClientResponse)
+	err := c.cc.Invoke(ctx, MailService_GetClient_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mailServiceClient) GetClients(ctx context.Context, in *GetClientsRequest, opts ...grpc.CallOption) (*GetClientsResponse, error) {
+	out := new(GetClientsResponse)
+	err := c.cc.Invoke(ctx, MailService_GetClients_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mailServiceClient) DeleteClient(ctx context.Context, in *DeleteClientRequest, opts ...grpc.CallOption) (*DeleteClientResponse, error) {
+	out := new(DeleteClientResponse)
+	err := c.cc.Invoke(ctx, MailService_DeleteClient_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mailServiceClient) HandleSendMail(ctx context.Context, in *HandleSendMailRequest, opts ...grpc.CallOption) (*HandleSendMailResponse, error) {
+	out := new(HandleSendMailResponse)
+	err := c.cc.Invoke(ctx, MailService_HandleSendMail_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mailServiceClient) TestSendMail(ctx context.Context, in *TestSendMailRequest, opts ...grpc.CallOption) (*TestSendMailResponse, error) {
+	out := new(TestSendMailResponse)
+	err := c.cc.Invoke(ctx, MailService_TestSendMail_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MailServiceServer is the server API for MailService service.
 // All implementations must embed UnimplementedMailServiceServer
 // for forward compatibility
@@ -183,6 +260,13 @@ type MailServiceServer interface {
 	GetTemplate(context.Context, *GetTemplateRequest) (*GetTemplateResponse, error)
 	GetTemplates(context.Context, *GetTemplatesRequest) (*GetTemplatesResponse, error)
 	DeleteTemplate(context.Context, *DeleteTemplateRequest) (*DeleteTemplateResponse, error)
+	CreateClient(context.Context, *CreateClientRequest) (*CreateClientResponse, error)
+	UpdateClient(context.Context, *UpdateClientRequest) (*UpdateClientResponse, error)
+	GetClient(context.Context, *GetClientRequest) (*GetClientResponse, error)
+	GetClients(context.Context, *GetClientsRequest) (*GetClientsResponse, error)
+	DeleteClient(context.Context, *DeleteClientRequest) (*DeleteClientResponse, error)
+	HandleSendMail(context.Context, *HandleSendMailRequest) (*HandleSendMailResponse, error)
+	TestSendMail(context.Context, *TestSendMailRequest) (*TestSendMailResponse, error)
 	mustEmbedUnimplementedMailServiceServer()
 }
 
@@ -225,6 +309,27 @@ func (UnimplementedMailServiceServer) GetTemplates(context.Context, *GetTemplate
 }
 func (UnimplementedMailServiceServer) DeleteTemplate(context.Context, *DeleteTemplateRequest) (*DeleteTemplateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTemplate not implemented")
+}
+func (UnimplementedMailServiceServer) CreateClient(context.Context, *CreateClientRequest) (*CreateClientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateClient not implemented")
+}
+func (UnimplementedMailServiceServer) UpdateClient(context.Context, *UpdateClientRequest) (*UpdateClientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateClient not implemented")
+}
+func (UnimplementedMailServiceServer) GetClient(context.Context, *GetClientRequest) (*GetClientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetClient not implemented")
+}
+func (UnimplementedMailServiceServer) GetClients(context.Context, *GetClientsRequest) (*GetClientsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetClients not implemented")
+}
+func (UnimplementedMailServiceServer) DeleteClient(context.Context, *DeleteClientRequest) (*DeleteClientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteClient not implemented")
+}
+func (UnimplementedMailServiceServer) HandleSendMail(context.Context, *HandleSendMailRequest) (*HandleSendMailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HandleSendMail not implemented")
+}
+func (UnimplementedMailServiceServer) TestSendMail(context.Context, *TestSendMailRequest) (*TestSendMailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TestSendMail not implemented")
 }
 func (UnimplementedMailServiceServer) mustEmbedUnimplementedMailServiceServer() {}
 
@@ -455,6 +560,132 @@ func _MailService_DeleteTemplate_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MailService_CreateClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateClientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MailServiceServer).CreateClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MailService_CreateClient_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MailServiceServer).CreateClient(ctx, req.(*CreateClientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MailService_UpdateClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateClientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MailServiceServer).UpdateClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MailService_UpdateClient_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MailServiceServer).UpdateClient(ctx, req.(*UpdateClientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MailService_GetClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetClientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MailServiceServer).GetClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MailService_GetClient_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MailServiceServer).GetClient(ctx, req.(*GetClientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MailService_GetClients_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetClientsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MailServiceServer).GetClients(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MailService_GetClients_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MailServiceServer).GetClients(ctx, req.(*GetClientsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MailService_DeleteClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteClientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MailServiceServer).DeleteClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MailService_DeleteClient_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MailServiceServer).DeleteClient(ctx, req.(*DeleteClientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MailService_HandleSendMail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HandleSendMailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MailServiceServer).HandleSendMail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MailService_HandleSendMail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MailServiceServer).HandleSendMail(ctx, req.(*HandleSendMailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MailService_TestSendMail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TestSendMailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MailServiceServer).TestSendMail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MailService_TestSendMail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MailServiceServer).TestSendMail(ctx, req.(*TestSendMailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MailService_ServiceDesc is the grpc.ServiceDesc for MailService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -509,6 +740,34 @@ var MailService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteTemplate",
 			Handler:    _MailService_DeleteTemplate_Handler,
+		},
+		{
+			MethodName: "CreateClient",
+			Handler:    _MailService_CreateClient_Handler,
+		},
+		{
+			MethodName: "UpdateClient",
+			Handler:    _MailService_UpdateClient_Handler,
+		},
+		{
+			MethodName: "GetClient",
+			Handler:    _MailService_GetClient_Handler,
+		},
+		{
+			MethodName: "GetClients",
+			Handler:    _MailService_GetClients_Handler,
+		},
+		{
+			MethodName: "DeleteClient",
+			Handler:    _MailService_DeleteClient_Handler,
+		},
+		{
+			MethodName: "HandleSendMail",
+			Handler:    _MailService_HandleSendMail_Handler,
+		},
+		{
+			MethodName: "TestSendMail",
+			Handler:    _MailService_TestSendMail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
