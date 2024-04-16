@@ -1,16 +1,17 @@
-export interface Attachment {
-  id: string
+export interface Server {
+  id?: string
   name: string
   host: string
-  port: number | string
+  port: string
   username: string
   password: string
-  tls: string
-  skipTls: boolean
-  maxConnections: number | string
-  idleTimeout: number | string
-  retries: number | string
-  waitTimeout: number | string
-  createdAt: string
-  updatedAt: string
+  tlsType: string
+  tlsSkipVerify: boolean
+  maxConnections: number
+  idleTimeout: number
+  retries: number
+  waitTimeout: number
+  isDefault?: boolean
+  createdAt?: string
+  updatedAt?: string
 }

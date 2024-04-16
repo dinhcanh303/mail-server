@@ -1,12 +1,12 @@
 import axios, { AxiosInstance } from 'axios'
 import { getTokenAuth } from './auth'
-const domainApi = import.meta.env.VITE_DOMAIN_API ?? "localhost"
+const domainApi = import.meta.env.VITE_DOMAIN_API ?? 'localhost:5000'
 
 class Http {
   instance: AxiosInstance
   constructor() {
     this.instance = axios.create({
-      baseURL: `https://${domainApi}/api/v1`,
+      baseURL: `http://${domainApi}/api/v1`,
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json'
@@ -19,14 +19,14 @@ const http = new Http().instance
 class HttpPrivate {
   instance: AxiosInstance
   constructor() {
-    const { accessToken, clientId } = getTokenAuth()
+    // const { accessToken, clientId } = getTokenAuth()
     this.instance = axios.create({
-      baseURL: `https://${domainApi}/api/v1`,
+      baseURL: `http://${domainApi}/api/v1`,
       timeout: 10000,
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: accessToken,
-        'Grpc-Metadata-X-Client-Id': clientId
+        'Content-Type': 'application/json'
+        // Authorization: accessToken,
+        // 'Grpc-Metadata-X-Client-Id': clientId
       }
     })
   }
@@ -36,14 +36,14 @@ const httpPrivate = new HttpPrivate().instance
 class HttpPrivateUpload {
   instance: AxiosInstance
   constructor() {
-    const { accessToken, clientId } = getTokenAuth()
+    // const { accessToken, clientId } = getTokenAuth()
     this.instance = axios.create({
       baseURL: `https://${domainApi}/api/v1`,
       timeout: 10000,
       headers: {
-        'Content-Type': 'multipart/form-data',
-        Authorization: accessToken,
-        'Grpc-Metadata-X-Client-Id': clientId
+        'Content-Type': 'multipart/form-data'
+        // Authorization: accessToken,
+        // 'Grpc-Metadata-X-Client-Id': clientId
       }
     })
   }
