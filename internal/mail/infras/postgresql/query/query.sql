@@ -5,8 +5,8 @@ INSERT INTO mail.servers (
     port,
     username,
     password,
-    tls,
-    skip_tls,
+    tls_type,
+    tls_skip_verify,
     max_connections,
     idle_timeout,
     retries,
@@ -26,8 +26,8 @@ UPDATE mail.servers SET
     port = COALESCE(sqlc.narg(port),port),
     username = COALESCE(sqlc.narg(username),username),
     password = COALESCE(sqlc.narg(password),password),
-    tls = COALESCE(sqlc.narg(tls),tls),
-    skip_tls = COALESCE(sqlc.narg(skip_tls),skip_tls),
+    tls_type = COALESCE(sqlc.narg(tls_type),tls_type),
+    tls_skip_verify = COALESCE(sqlc.narg(tls_skip_verify),tls_skip_verify),
     max_connections = COALESCE(sqlc.narg(max_connections),max_connections),
     idle_timeout = COALESCE(sqlc.narg(idle_timeout),idle_timeout),
     retries = COALESCE(sqlc.narg(retries),retries),
@@ -84,3 +84,35 @@ WHERE id = sqlc.arg(id) RETURNING *;
 
 -- name: DeleteClient :exec
 DELETE FROM mail.clients WHERE id = $1;
+
+
+-- name: CreateHistory :one
+INSERT INTO mail.histories (
+    from_,
+    to_,
+    subject,
+    cc,
+    bcc,
+    content,
+    status
+) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *;
+
+-- name: GetHistory :one
+SELECT * FROM mail.histories WHERE id = $1;
+
+-- name: GetHistories :many
+SELECT * FROM mail.histories LIMIT $1 OFFSET $2;
+
+-- name: UpdateHistory :one
+UPDATE mail.histories SET 
+    from_ = COALESCE(sqlc.narg(from_),from_),
+    to_ = COALESCE(sqlc.narg(to_),to_),
+    subject = COALESCE(sqlc.narg(subject),subject),
+    cc = COALESCE(sqlc.narg(cc),cc),
+    bcc = COALESCE(sqlc.narg(bcc),bcc),
+    content = COALESCE(sqlc.narg(content),content),
+    status = COALESCE(sqlc.narg(status),status)
+WHERE id = sqlc.arg(id) RETURNING *;
+
+-- name: DeleteHistory :exec
+DELETE FROM mail.histories WHERE id = $1;

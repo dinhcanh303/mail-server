@@ -17,21 +17,22 @@ type Server struct {
 	Port           int64     `json:"port"`
 	UserName       string    `json:"username"`
 	Password       string    `json:"password"`
-	TLS            TLSType   `json:"tls"`
-	SkipTLSVerify  bool      `json:"skip_tls"`
+	TLSType        TLSType   `json:"tls_type"`
+	TLSSkipVerify  bool      `json:"skip_tls_verify"`
 	MaxConnections int64     `json:"max_connections"`
 	Retries        int64     `json:"retries"`
 	IdleTimeout    int64     `json:"idle_timeout"`
 	WaitTimeout    int64     `json:"wait_timeout"`
+	IsDefault      bool      `json:"is_default"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }
 
-func NewServer(name string, host string, port int64, username string, password string, tls string, skipTls bool,
+func NewServer(name string, host string, port int64, username string, password string, tlsType string, tlsSkipVerify bool,
 	maxConnections int64, retries int64, idleTimeout int64, waitTimeout int64,
 ) *Server {
-	if tls == "" {
-		tls = "ssl/tls"
+	if tlsType == "" {
+		tlsType = "TLS"
 	}
 	if maxConnections == 0 {
 		maxConnections = 10
@@ -51,8 +52,8 @@ func NewServer(name string, host string, port int64, username string, password s
 		Port:           port,
 		UserName:       username,
 		Password:       password,
-		TLS:            TLSType(tls),
-		SkipTLSVerify:  skipTls,
+		TLSType:        TLSType(tlsType),
+		TLSSkipVerify:  tlsSkipVerify,
 		MaxConnections: maxConnections,
 		Retries:        retries,
 		IdleTimeout:    idleTimeout,

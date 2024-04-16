@@ -5,21 +5,38 @@ import (
 	"fmt"
 	"net/smtp"
 
-	configs "github.com/dinhcanh303/mail-server/pkg/config"
 	"github.com/jordan-wright/email"
 )
 
+const (
+	_retries        = 5
+	_maxConnections = 10
+	_idleTimeout    = 15
+	_waitTimeout    = 5
+	_skipTls        = false
+	_fromName       = "test@test.com"
+)
+
 type emailSender struct {
-	cfg *configs.Mail
+	fromName, fromAddress, username, password, host, port string
+	maxConnections, idleTimeout, waitTimeout, retries     int
+	skipTls                                               bool
+}
+
+func (c *emailSender) Configure(opts ...Option) EmailSender {
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 // SendEmail implements EmailSender.
 func (sender *emailSender) SendEmail(subject string, content string, to []string, cc []string, bcc []string, attachFiles []string) error {
-	emailFromName := sender.cfg.FromName
-	emailFromAddress := sender.cfg.FromAddress
-	emailPassword := sender.cfg.Password
-	emailHost := sender.cfg.Host
-	emailPort := sender.cfg.Port
+	emailFromName := sender.fromName
+	emailFromAddress := sender.fromAddress
+	emailPassword := sender.password
+	emailHost := sender.host
+	emailPort := sender.port
 	e := email.NewEmail()
 	e.From = fmt.Sprintf("%s<%s>", emailFromName, emailFromAddress)
 	e.Subject = subject
@@ -39,7 +56,7 @@ func (sender *emailSender) SendEmail(subject string, content string, to []string
 		InsecureSkipVerify: true,
 		ServerName:         emailHost,
 	}
-	if sender.cfg.Encryption == "tls1" {
+	if !sender.skipTls {
 		return e.SendWithStartTLS(smtpServerAddress, smtpAuth, tlsConfig)
 	}
 	return e.Send(smtpServerAddress, smtpAuth)
@@ -47,8 +64,18 @@ func (sender *emailSender) SendEmail(subject string, content string, to []string
 
 var _ EmailSender = (*emailSender)(nil)
 
-func NewEmailSender(cfg *configs.Mail) EmailSender {
+func NewEmailSender() EmailSender {
 	return &emailSender{
-		cfg: cfg,
+		fromName:       _fromName,
+		fromAddress:    _fromName,
+		username:       "",
+		password:       "",
+		host:           "",
+		port:           "",
+		maxConnections: _maxConnections,
+		idleTimeout:    _idleTimeout,
+		waitTimeout:    _waitTimeout,
+		retries:        _retries,
+		skipTls:        _skipTls,
 	}
 }

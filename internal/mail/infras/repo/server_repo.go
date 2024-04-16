@@ -40,13 +40,13 @@ func (s *serverRepo) CreateServer(ctx context.Context, server *domain.Server) (*
 		Port:     server.Port,
 		Username: server.UserName,
 		Password: server.Password,
-		Tls: sql.NullString{
-			String: string(server.TLS),
-			Valid:  string(server.TLS) != "",
+		TlsType: sql.NullString{
+			String: string(server.TLSType),
+			Valid:  string(server.TLSType) != "",
 		},
-		SkipTls: sql.NullBool{
-			Bool:  server.SkipTLSVerify,
-			Valid: server.SkipTLSVerify,
+		TlsSkipVerify: sql.NullBool{
+			Bool:  server.TLSSkipVerify,
+			Valid: server.TLSSkipVerify,
 		},
 		MaxConnections: sql.NullInt64{
 			Int64: server.MaxConnections,
@@ -145,13 +145,13 @@ func (s *serverRepo) UpdateServer(ctx context.Context, server *domain.Server) (*
 			String: server.Password,
 			Valid:  server.Password != "",
 		},
-		Tls: sql.NullString{
-			String: string(server.TLS),
-			Valid:  string(server.TLS) == "",
+		TlsType: sql.NullString{
+			String: string(server.TLSType),
+			Valid:  string(server.TLSType) == "",
 		},
-		SkipTls: sql.NullBool{
-			Bool:  server.SkipTLSVerify,
-			Valid: server.SkipTLSVerify,
+		TlsSkipVerify: sql.NullBool{
+			Bool:  server.TLSSkipVerify,
+			Valid: server.TLSSkipVerify,
 		},
 		MaxConnections: sql.NullInt64{
 			Int64: server.MaxConnections,
@@ -183,12 +183,13 @@ func repoServerToDomainServer(result postgresql.MailServer) *domain.Server {
 		Port:           result.Port,
 		UserName:       result.Username,
 		Password:       result.Password,
-		TLS:            domain.TLSType(result.Tls.String),
-		SkipTLSVerify:  result.SkipTls.Bool,
+		TLSType:        domain.TLSType(result.TlsType.String),
+		TLSSkipVerify:  result.TlsSkipVerify.Bool,
 		MaxConnections: result.MaxConnections.Int64,
 		Retries:        result.Retries.Int64,
 		IdleTimeout:    result.IdleTimeout.Int64,
 		WaitTimeout:    result.WaitTimeout.Int64,
+		IsDefault:      result.IsDefault,
 		CreatedAt:      result.CreatedAt,
 		UpdatedAt:      result.UpdatedAt,
 	}

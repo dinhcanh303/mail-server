@@ -8,6 +8,9 @@ package postgresql
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
+
+	"github.com/sqlc-dev/pqtype"
 )
 
 const createClient = `-- name: CreateClient :one
@@ -15,7 +18,7 @@ INSERT INTO mail.clients (
     name,
     server_id,
     template_id
-) VALUES ($1,$2,$3) RETURNING id, name, server_id, template_id, created_at, updated_at
+) VALUES ($1,$2,$3) RETURNING id, name, server_id, template_id, is_default, created_at, updated_at
 `
 
 type CreateClientParams struct {
@@ -32,6 +35,55 @@ func (q *Queries) CreateClient(ctx context.Context, arg CreateClientParams) (Mai
 		&i.Name,
 		&i.ServerID,
 		&i.TemplateID,
+		&i.IsDefault,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createHistory = `-- name: CreateHistory :one
+INSERT INTO mail.histories (
+    from_,
+    to_,
+    subject,
+    cc,
+    bcc,
+    content,
+    status
+) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id, from_, to_, subject, cc, bcc, content, status, created_at, updated_at
+`
+
+type CreateHistoryParams struct {
+	From    string          `json:"from_"`
+	To      string          `json:"to_"`
+	Subject sql.NullString  `json:"subject"`
+	Cc      sql.NullString  `json:"cc"`
+	Bcc     sql.NullString  `json:"bcc"`
+	Content json.RawMessage `json:"content"`
+	Status  sql.NullString  `json:"status"`
+}
+
+func (q *Queries) CreateHistory(ctx context.Context, arg CreateHistoryParams) (MailHistory, error) {
+	row := q.db.QueryRowContext(ctx, createHistory,
+		arg.From,
+		arg.To,
+		arg.Subject,
+		arg.Cc,
+		arg.Bcc,
+		arg.Content,
+		arg.Status,
+	)
+	var i MailHistory
+	err := row.Scan(
+		&i.ID,
+		&i.From,
+		&i.To,
+		&i.Subject,
+		&i.Cc,
+		&i.Bcc,
+		&i.Content,
+		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -45,13 +97,13 @@ INSERT INTO mail.servers (
     port,
     username,
     password,
-    tls,
-    skip_tls,
+    tls_type,
+    tls_skip_verify,
     max_connections,
     idle_timeout,
     retries,
     wait_timeout
-) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id, name, host, port, username, password, tls, skip_tls, max_connections, idle_timeout, retries, wait_timeout, created_at, updated_at
+) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id, name, host, port, username, password, fromname, tls_type, tls_skip_verify, max_connections, idle_timeout, retries, wait_timeout, is_default, created_at, updated_at
 `
 
 type CreateServerParams struct {
@@ -60,8 +112,8 @@ type CreateServerParams struct {
 	Port           int64          `json:"port"`
 	Username       string         `json:"username"`
 	Password       string         `json:"password"`
-	Tls            sql.NullString `json:"tls"`
-	SkipTls        sql.NullBool   `json:"skip_tls"`
+	TlsType        sql.NullString `json:"tls_type"`
+	TlsSkipVerify  sql.NullBool   `json:"tls_skip_verify"`
 	MaxConnections sql.NullInt64  `json:"max_connections"`
 	IdleTimeout    sql.NullInt64  `json:"idle_timeout"`
 	Retries        sql.NullInt64  `json:"retries"`
@@ -75,8 +127,8 @@ func (q *Queries) CreateServer(ctx context.Context, arg CreateServerParams) (Mai
 		arg.Port,
 		arg.Username,
 		arg.Password,
-		arg.Tls,
-		arg.SkipTls,
+		arg.TlsType,
+		arg.TlsSkipVerify,
 		arg.MaxConnections,
 		arg.IdleTimeout,
 		arg.Retries,
@@ -90,12 +142,14 @@ func (q *Queries) CreateServer(ctx context.Context, arg CreateServerParams) (Mai
 		&i.Port,
 		&i.Username,
 		&i.Password,
-		&i.Tls,
-		&i.SkipTls,
+		&i.Fromname,
+		&i.TlsType,
+		&i.TlsSkipVerify,
 		&i.MaxConnections,
 		&i.IdleTimeout,
 		&i.Retries,
 		&i.WaitTimeout,
+		&i.IsDefault,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -107,7 +161,7 @@ INSERT INTO mail.templates (
     name,
     html,
     status
-) VALUES ($1,$2,$3) RETURNING id, name, html, status, created_at, updated_at
+) VALUES ($1,$2,$3) RETURNING id, name, html, status, is_default, created_at, updated_at
 `
 
 type CreateTemplateParams struct {
@@ -124,6 +178,7 @@ func (q *Queries) CreateTemplate(ctx context.Context, arg CreateTemplateParams) 
 		&i.Name,
 		&i.Html,
 		&i.Status,
+		&i.IsDefault,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -136,6 +191,15 @@ DELETE FROM mail.clients WHERE id = $1
 
 func (q *Queries) DeleteClient(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteClient, id)
+	return err
+}
+
+const deleteHistory = `-- name: DeleteHistory :exec
+DELETE FROM mail.histories WHERE id = $1
+`
+
+func (q *Queries) DeleteHistory(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteHistory, id)
 	return err
 }
 
@@ -158,7 +222,7 @@ func (q *Queries) DeleteTemplate(ctx context.Context, id int64) error {
 }
 
 const getClient = `-- name: GetClient :one
-SELECT id, name, server_id, template_id, created_at, updated_at FROM mail.clients WHERE id = $1
+SELECT id, name, server_id, template_id, is_default, created_at, updated_at FROM mail.clients WHERE id = $1
 `
 
 func (q *Queries) GetClient(ctx context.Context, id int64) (MailClient, error) {
@@ -169,6 +233,7 @@ func (q *Queries) GetClient(ctx context.Context, id int64) (MailClient, error) {
 		&i.Name,
 		&i.ServerID,
 		&i.TemplateID,
+		&i.IsDefault,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -176,7 +241,7 @@ func (q *Queries) GetClient(ctx context.Context, id int64) (MailClient, error) {
 }
 
 const getClients = `-- name: GetClients :many
-SELECT id, name, server_id, template_id, created_at, updated_at FROM mail.clients LIMIT $1 OFFSET $2
+SELECT id, name, server_id, template_id, is_default, created_at, updated_at FROM mail.clients LIMIT $1 OFFSET $2
 `
 
 type GetClientsParams struct {
@@ -198,6 +263,7 @@ func (q *Queries) GetClients(ctx context.Context, arg GetClientsParams) ([]MailC
 			&i.Name,
 			&i.ServerID,
 			&i.TemplateID,
+			&i.IsDefault,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -214,8 +280,73 @@ func (q *Queries) GetClients(ctx context.Context, arg GetClientsParams) ([]MailC
 	return items, nil
 }
 
+const getHistories = `-- name: GetHistories :many
+SELECT id, from_, to_, subject, cc, bcc, content, status, created_at, updated_at FROM mail.histories LIMIT $1 OFFSET $2
+`
+
+type GetHistoriesParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) GetHistories(ctx context.Context, arg GetHistoriesParams) ([]MailHistory, error) {
+	rows, err := q.db.QueryContext(ctx, getHistories, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MailHistory
+	for rows.Next() {
+		var i MailHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.From,
+			&i.To,
+			&i.Subject,
+			&i.Cc,
+			&i.Bcc,
+			&i.Content,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getHistory = `-- name: GetHistory :one
+SELECT id, from_, to_, subject, cc, bcc, content, status, created_at, updated_at FROM mail.histories WHERE id = $1
+`
+
+func (q *Queries) GetHistory(ctx context.Context, id int64) (MailHistory, error) {
+	row := q.db.QueryRowContext(ctx, getHistory, id)
+	var i MailHistory
+	err := row.Scan(
+		&i.ID,
+		&i.From,
+		&i.To,
+		&i.Subject,
+		&i.Cc,
+		&i.Bcc,
+		&i.Content,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getServer = `-- name: GetServer :one
-SELECT id, name, host, port, username, password, tls, skip_tls, max_connections, idle_timeout, retries, wait_timeout, created_at, updated_at FROM mail.servers WHERE id = $1
+SELECT id, name, host, port, username, password, fromname, tls_type, tls_skip_verify, max_connections, idle_timeout, retries, wait_timeout, is_default, created_at, updated_at FROM mail.servers WHERE id = $1
 `
 
 func (q *Queries) GetServer(ctx context.Context, id int64) (MailServer, error) {
@@ -228,12 +359,14 @@ func (q *Queries) GetServer(ctx context.Context, id int64) (MailServer, error) {
 		&i.Port,
 		&i.Username,
 		&i.Password,
-		&i.Tls,
-		&i.SkipTls,
+		&i.Fromname,
+		&i.TlsType,
+		&i.TlsSkipVerify,
 		&i.MaxConnections,
 		&i.IdleTimeout,
 		&i.Retries,
 		&i.WaitTimeout,
+		&i.IsDefault,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -241,7 +374,7 @@ func (q *Queries) GetServer(ctx context.Context, id int64) (MailServer, error) {
 }
 
 const getServers = `-- name: GetServers :many
-SELECT id, name, host, port, username, password, tls, skip_tls, max_connections, idle_timeout, retries, wait_timeout, created_at, updated_at FROM mail.servers LIMIT $1 OFFSET $2
+SELECT id, name, host, port, username, password, fromname, tls_type, tls_skip_verify, max_connections, idle_timeout, retries, wait_timeout, is_default, created_at, updated_at FROM mail.servers LIMIT $1 OFFSET $2
 `
 
 type GetServersParams struct {
@@ -265,12 +398,14 @@ func (q *Queries) GetServers(ctx context.Context, arg GetServersParams) ([]MailS
 			&i.Port,
 			&i.Username,
 			&i.Password,
-			&i.Tls,
-			&i.SkipTls,
+			&i.Fromname,
+			&i.TlsType,
+			&i.TlsSkipVerify,
 			&i.MaxConnections,
 			&i.IdleTimeout,
 			&i.Retries,
 			&i.WaitTimeout,
+			&i.IsDefault,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -288,7 +423,7 @@ func (q *Queries) GetServers(ctx context.Context, arg GetServersParams) ([]MailS
 }
 
 const getTemplate = `-- name: GetTemplate :one
-SELECT id, name, html, status, created_at, updated_at FROM mail.templates WHERE id = $1
+SELECT id, name, html, status, is_default, created_at, updated_at FROM mail.templates WHERE id = $1
 `
 
 func (q *Queries) GetTemplate(ctx context.Context, id int64) (MailTemplate, error) {
@@ -299,6 +434,7 @@ func (q *Queries) GetTemplate(ctx context.Context, id int64) (MailTemplate, erro
 		&i.Name,
 		&i.Html,
 		&i.Status,
+		&i.IsDefault,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -306,7 +442,7 @@ func (q *Queries) GetTemplate(ctx context.Context, id int64) (MailTemplate, erro
 }
 
 const getTemplates = `-- name: GetTemplates :many
-SELECT id, name, html, status, created_at, updated_at FROM mail.templates LIMIT $1 OFFSET $2
+SELECT id, name, html, status, is_default, created_at, updated_at FROM mail.templates LIMIT $1 OFFSET $2
 `
 
 type GetTemplatesParams struct {
@@ -328,6 +464,7 @@ func (q *Queries) GetTemplates(ctx context.Context, arg GetTemplatesParams) ([]M
 			&i.Name,
 			&i.Html,
 			&i.Status,
+			&i.IsDefault,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -349,7 +486,7 @@ UPDATE mail.clients SET
     name = COALESCE($1,name),
     server_id = COALESCE($2,server_id),
     template_id = COALESCE($3,template_id)
-WHERE id = $4 RETURNING id, name, server_id, template_id, created_at, updated_at
+WHERE id = $4 RETURNING id, name, server_id, template_id, is_default, created_at, updated_at
 `
 
 type UpdateClientParams struct {
@@ -372,6 +509,57 @@ func (q *Queries) UpdateClient(ctx context.Context, arg UpdateClientParams) (Mai
 		&i.Name,
 		&i.ServerID,
 		&i.TemplateID,
+		&i.IsDefault,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateHistory = `-- name: UpdateHistory :one
+UPDATE mail.histories SET 
+    from_ = COALESCE($1,from_),
+    to_ = COALESCE($2,to_),
+    subject = COALESCE($3,subject),
+    cc = COALESCE($4,cc),
+    bcc = COALESCE($5,bcc),
+    content = COALESCE($6,content),
+    status = COALESCE($7,status)
+WHERE id = $8 RETURNING id, from_, to_, subject, cc, bcc, content, status, created_at, updated_at
+`
+
+type UpdateHistoryParams struct {
+	From    sql.NullString        `json:"from_"`
+	To      sql.NullString        `json:"to_"`
+	Subject sql.NullString        `json:"subject"`
+	Cc      sql.NullString        `json:"cc"`
+	Bcc     sql.NullString        `json:"bcc"`
+	Content pqtype.NullRawMessage `json:"content"`
+	Status  sql.NullString        `json:"status"`
+	ID      int64                 `json:"id"`
+}
+
+func (q *Queries) UpdateHistory(ctx context.Context, arg UpdateHistoryParams) (MailHistory, error) {
+	row := q.db.QueryRowContext(ctx, updateHistory,
+		arg.From,
+		arg.To,
+		arg.Subject,
+		arg.Cc,
+		arg.Bcc,
+		arg.Content,
+		arg.Status,
+		arg.ID,
+	)
+	var i MailHistory
+	err := row.Scan(
+		&i.ID,
+		&i.From,
+		&i.To,
+		&i.Subject,
+		&i.Cc,
+		&i.Bcc,
+		&i.Content,
+		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -385,13 +573,13 @@ UPDATE mail.servers SET
     port = COALESCE($3,port),
     username = COALESCE($4,username),
     password = COALESCE($5,password),
-    tls = COALESCE($6,tls),
-    skip_tls = COALESCE($7,skip_tls),
+    tls_type = COALESCE($6,tls_type),
+    tls_skip_verify = COALESCE($7,tls_skip_verify),
     max_connections = COALESCE($8,max_connections),
     idle_timeout = COALESCE($9,idle_timeout),
     retries = COALESCE($10,retries),
     wait_timeout = COALESCE($11,wait_timeout)
-WHERE id = $12 RETURNING id, name, host, port, username, password, tls, skip_tls, max_connections, idle_timeout, retries, wait_timeout, created_at, updated_at
+WHERE id = $12 RETURNING id, name, host, port, username, password, fromname, tls_type, tls_skip_verify, max_connections, idle_timeout, retries, wait_timeout, is_default, created_at, updated_at
 `
 
 type UpdateServerParams struct {
@@ -400,8 +588,8 @@ type UpdateServerParams struct {
 	Port           sql.NullInt64  `json:"port"`
 	Username       sql.NullString `json:"username"`
 	Password       sql.NullString `json:"password"`
-	Tls            sql.NullString `json:"tls"`
-	SkipTls        sql.NullBool   `json:"skip_tls"`
+	TlsType        sql.NullString `json:"tls_type"`
+	TlsSkipVerify  sql.NullBool   `json:"tls_skip_verify"`
 	MaxConnections sql.NullInt64  `json:"max_connections"`
 	IdleTimeout    sql.NullInt64  `json:"idle_timeout"`
 	Retries        sql.NullInt64  `json:"retries"`
@@ -416,8 +604,8 @@ func (q *Queries) UpdateServer(ctx context.Context, arg UpdateServerParams) (Mai
 		arg.Port,
 		arg.Username,
 		arg.Password,
-		arg.Tls,
-		arg.SkipTls,
+		arg.TlsType,
+		arg.TlsSkipVerify,
 		arg.MaxConnections,
 		arg.IdleTimeout,
 		arg.Retries,
@@ -432,12 +620,14 @@ func (q *Queries) UpdateServer(ctx context.Context, arg UpdateServerParams) (Mai
 		&i.Port,
 		&i.Username,
 		&i.Password,
-		&i.Tls,
-		&i.SkipTls,
+		&i.Fromname,
+		&i.TlsType,
+		&i.TlsSkipVerify,
 		&i.MaxConnections,
 		&i.IdleTimeout,
 		&i.Retries,
 		&i.WaitTimeout,
+		&i.IsDefault,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -449,7 +639,7 @@ UPDATE mail.templates SET
     name = COALESCE($1,name),
     html = COALESCE($2,html),
     status = COALESCE($3,status)
-WHERE id = $4 RETURNING id, name, html, status, created_at, updated_at
+WHERE id = $4 RETURNING id, name, html, status, is_default, created_at, updated_at
 `
 
 type UpdateTemplateParams struct {
@@ -472,6 +662,7 @@ func (q *Queries) UpdateTemplate(ctx context.Context, arg UpdateTemplateParams) 
 		&i.Name,
 		&i.Html,
 		&i.Status,
+		&i.IsDefault,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

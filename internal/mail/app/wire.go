@@ -6,14 +6,21 @@ package app
 import (
 	"github.com/dinhcanh303/mail-server/cmd/mail/config"
 	"github.com/dinhcanh303/mail-server/internal/mail/app/router"
+	"github.com/dinhcanh303/mail-server/internal/mail/events/handlers"
+	"github.com/dinhcanh303/mail-server/internal/mail/infras"
 	"github.com/dinhcanh303/mail-server/internal/mail/infras/repo"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/client"
+	"github.com/dinhcanh303/mail-server/internal/mail/usecases/history"
+	"github.com/dinhcanh303/mail-server/internal/mail/usecases/sendmail"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/server"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/template"
 
 	configs "github.com/dinhcanh303/mail-server/pkg/config"
+	"github.com/dinhcanh303/mail-server/pkg/mail"
 	"github.com/dinhcanh303/mail-server/pkg/postgres"
 	"github.com/dinhcanh303/mail-server/pkg/rabbitmq"
+	"github.com/dinhcanh303/mail-server/pkg/rabbitmq/consumer"
+	"github.com/dinhcanh303/mail-server/pkg/rabbitmq/publisher"
 	"github.com/dinhcanh303/mail-server/pkg/redis"
 	"github.com/dinhcanh303/mail-server/pkg/token"
 	"github.com/google/wire"
@@ -32,15 +39,23 @@ func InitApp(
 		New,
 		dbEngineFunc,
 		// jwtFunc,
-		// rabbitMQFunc,
+		rabbitMQFunc,
+		mailServer,
+		publisher.EventPublisherSet,
+		consumer.EventConsumerSet,
 		redisEngineFunc,
 		router.MailGRPCServerSet,
 		server.UseCaseSet,
 		template.UseCaseSet,
 		client.UseCaseSet,
+		sendmail.UseCaseSet,
+		history.UseCaseSet,
 		repo.ServerRepoSet,
 		repo.TemplateRepoSet,
 		repo.ClientRepoSet,
+		repo.HistoryRepoSet,
+		infras.MailEventPublisherSet,
+		handlers.MailEventHandlerSet,
 	))
 }
 func dbEngineFunc(url postgres.DBConnString) (postgres.DBEngine, func(), error) {
@@ -67,4 +82,8 @@ func redisEngineFunc(config *configs.Redis) (redis.RedisEngine, func(), error) {
 		return nil, nil, err
 	}
 	return redis, func() { redis.Close() }, nil
+}
+
+func mailServer() mail.EmailSender {
+	return mail.NewEmailSender()
 }

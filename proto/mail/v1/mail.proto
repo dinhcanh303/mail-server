@@ -170,7 +170,7 @@ service MailService {
             description: ""
         };
     }
-    rpc HandleSendMail(HandleSendMailRequest) returns (HandleSendMailResponse){
+    rpc SendMail(SendMailRequest) returns (SendMailResponse){
         option (google.api.http) = {
             post: "/api/v1/mails",
             body: "*"
@@ -197,8 +197,8 @@ message TestSendMailRequest{
     int64 port = 3;
     string username = 4;
     string password = 5;
-    string tls = 6;
-    bool skip_tls = 7;
+    string tls_type = 6;
+    bool tls_skip_verify = 7;
     int64 max_connections = 8;
     int64 idle_timeout = 9;
     int64 retries = 10;
@@ -206,12 +206,16 @@ message TestSendMailRequest{
     string content = 12;
 }
 message TestSendMailResponse{}
-message HandleSendMailRequest {
-    int32 client_id = 1;
+message SendMailRequest {
+    int64 client_id = 1;
     string from = 2;
     string to = 3;
+    string subject = 4;
+    string cc = 5;
+    string bcc = 6;
+    google.protobuf.Any content = 7;
 }
-message HandleSendMailResponse{}
+message SendMailResponse{}
 message CreateClientRequest {
     string name = 1;
     int64 server_id = 2;
@@ -248,8 +252,9 @@ message Client {
     string name = 2;
     int64 server_id = 3;
     int64 template_id = 4;
-    google.protobuf.Timestamp created_at = 5;
-    google.protobuf.Timestamp updated_at = 6;
+    bool is_default = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp updated_at = 7;
 
 }
 message CreateTemplateRequest{
@@ -288,8 +293,9 @@ message Template {
     string name = 2;
     string status = 3;
     string html = 4;
-    google.protobuf.Timestamp created_at = 5;
-    google.protobuf.Timestamp updated_at = 6;
+    bool is_default = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp updated_at = 7;
 }
 message DeleteServerRequest {
     int64 id = 1;
@@ -314,8 +320,8 @@ message CreateServerRequest{
     int64 port = 3;
     string username = 4;
     string password = 5;
-    string tls = 6;
-    bool skip_tls = 7;
+    string tls_type = 6;
+    bool tls_skip_verify = 7;
     int64 max_connections = 8;
     int64 idle_timeout = 9;
     int64 retries = 10;
@@ -337,14 +343,15 @@ message Server {
     int64 port = 4;
     string username = 5;
     string password = 6;
-    string tls = 7;
-    bool skip_tls = 8;
+    string tls_type = 7;
+    bool tls_skip_verify = 8;
     int64 max_connections = 9;
     int64 idle_timeout = 10;
     int64 retries = 11;
     int64 wait_timeout = 12;
-    google.protobuf.Timestamp created_at = 13;
-    google.protobuf.Timestamp updated_at = 14;
+    bool is_default = 13;
+    google.protobuf.Timestamp created_at = 14;
+    google.protobuf.Timestamp updated_at = 15;
 }
 message LogoutRequest{}
 message LogoutResponse{}

@@ -9,13 +9,20 @@ package app
 import (
 	"github.com/dinhcanh303/mail-server/cmd/mail/config"
 	"github.com/dinhcanh303/mail-server/internal/mail/app/router"
+	"github.com/dinhcanh303/mail-server/internal/mail/events/handlers"
+	"github.com/dinhcanh303/mail-server/internal/mail/infras"
 	"github.com/dinhcanh303/mail-server/internal/mail/infras/repo"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/client"
+	"github.com/dinhcanh303/mail-server/internal/mail/usecases/history"
+	"github.com/dinhcanh303/mail-server/internal/mail/usecases/sendmail"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/server"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/template"
 	"github.com/dinhcanh303/mail-server/pkg/config"
+	"github.com/dinhcanh303/mail-server/pkg/mail"
 	"github.com/dinhcanh303/mail-server/pkg/postgres"
 	"github.com/dinhcanh303/mail-server/pkg/rabbitmq"
+	"github.com/dinhcanh303/mail-server/pkg/rabbitmq/consumer"
+	"github.com/dinhcanh303/mail-server/pkg/rabbitmq/publisher"
 	"github.com/dinhcanh303/mail-server/pkg/redis"
 	"github.com/dinhcanh303/mail-server/pkg/token"
 	"github.com/rabbitmq/amqp091-go"
@@ -39,10 +46,37 @@ func InitApp(cfg *config.Config, cfg2 *configs.Redis, dbConnStr postgres.DBConnS
 	templateRepo := repo.NewTemplateRepo(dbEngine)
 	templateUseCase := template.NewUseCase(redisEngine, templateRepo)
 	clientRepo := repo.NewClientRepo(dbEngine)
-	clientUseCase := client.NewUseCase(redisEngine, clientRepo)
-	mailServiceServer := router.NewMailGRPCServer(grpcServer, templateUseCase, useCase, clientUseCase, cfg)
-	app := New(cfg, dbEngine, useCase, templateUseCase, clientUseCase, mailServiceServer)
+	clientUseCase := client.NewUseCase(redisEngine, clientRepo, useCase, templateUseCase)
+	connection, cleanup3, err := rabbitMQFunc(rabbitMQConnStr)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	eventPublisher, err := publisher.NewPublisher(connection)
+	if err != nil {
+		cleanup3()
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	mailEventPublisher := infras.NewMailEventPublisher(eventPublisher)
+	sendmailUseCase := sendmail.NewUseCase(redisEngine, mailEventPublisher)
+	mailServiceServer := router.NewMailGRPCServer(grpcServer, templateUseCase, useCase, clientUseCase, sendmailUseCase, cfg)
+	historyRepo := repo.NewHistoryRepo(dbEngine)
+	historyUseCase := history.NewUseCase(redisEngine, historyRepo)
+	emailSender := mailServer()
+	mailEventHandler := handlers.NewMailEventHandler(historyUseCase, emailSender, clientUseCase)
+	eventConsumer, err := consumer.NewConsumer(connection)
+	if err != nil {
+		cleanup3()
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	app := New(cfg, dbEngine, useCase, templateUseCase, clientUseCase, sendmailUseCase, mailServiceServer, mailEventHandler, eventPublisher, eventConsumer)
 	return app, func() {
+		cleanup3()
 		cleanup2()
 		cleanup()
 	}, nil
@@ -79,4 +113,8 @@ func redisEngineFunc(config2 *configs.Redis) (redis.RedisEngine, func(), error) 
 	return redis2, func() {
 		redis2.Close()
 	}, nil
+}
+
+func mailServer() mail.EmailSender {
+	return mail.NewEmailSender()
 }

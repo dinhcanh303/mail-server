@@ -125,6 +125,7 @@ func repoToDOmainClient(entity postgresql.MailClient) *domain.Client {
 		Name:       entity.Name,
 		ServerID:   entity.ServerID,
 		TemplateID: entity.TemplateID,
+		IsDefault:  entity.IsDefault,
 		CreatedAt:  entity.CreatedAt,
 		UpdatedAt:  entity.UpdatedAt,
 	}

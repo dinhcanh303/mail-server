@@ -130,6 +130,7 @@ func repoTemplateToDomainTemplate(result postgresql.MailTemplate) *domain.Templa
 		Name:      result.Name,
 		Status:    result.Status.String,
 		Html:      result.Html.String,
+		IsDefault: result.IsDefault,
 		CreatedAt: result.CreatedAt,
 		UpdatedAt: result.UpdatedAt,
 	}

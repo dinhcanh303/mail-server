@@ -18,7 +18,7 @@ func TestSendMail(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, config)
 
-	senderMail := NewEmailSender(config)
+	senderMail := NewEmailSender()
 	subject := "Email test"
 	content := `<h1>Hello world</h1>
 	<p>This is a test message from <a href="https://github.com/dinhcanh303">Foden Ngo</a></p>`

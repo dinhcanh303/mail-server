@@ -16,6 +16,207 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/clients": {
+      "get": {
+        "summary": "Get all client mail service",
+        "operationId": "MailService_GetClients",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetClientsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "MailService"
+        ]
+      },
+      "post": {
+        "summary": "Create client mail service",
+        "operationId": "MailService_CreateClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateClientResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateClientRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MailService"
+        ]
+      }
+    },
+    "/api/v1/clients/{client.id}": {
+      "put": {
+        "summary": "Update client mail service",
+        "operationId": "MailService_UpdateClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateClientResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client.id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "client": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "serverId": {
+                      "type": "string",
+                      "format": "int64"
+                    },
+                    "templateId": {
+                      "type": "string",
+                      "format": "int64"
+                    },
+                    "isDefault": {
+                      "type": "boolean"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "MailService"
+        ]
+      }
+    },
+    "/api/v1/clients/{id}": {
+      "get": {
+        "summary": "Get client mail service",
+        "operationId": "MailService_GetClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetClientResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "MailService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete client mail service",
+        "operationId": "MailService_DeleteClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteClientResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "MailService"
+        ]
+      }
+    },
     "/api/v1/login": {
       "post": {
         "summary": "Login mail service",
@@ -67,6 +268,72 @@
             }
           }
         },
+        "tags": [
+          "MailService"
+        ]
+      }
+    },
+    "/api/v1/mails": {
+      "post": {
+        "summary": "Handle send mail in mail service",
+        "operationId": "MailService_SendMail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SendMailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SendMailRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MailService"
+        ]
+      }
+    },
+    "/api/v1/mails/test": {
+      "post": {
+        "summary": "Test send mail in mail service",
+        "operationId": "MailService_TestSendMail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TestSendMailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TestSendMailRequest"
+            }
+          }
+        ],
         "tags": [
           "MailService"
         ]
@@ -256,10 +523,10 @@
                     "password": {
                       "type": "string"
                     },
-                    "tls": {
+                    "tlsType": {
                       "type": "string"
                     },
-                    "skipTls": {
+                    "tlsSkipVerify": {
                       "type": "boolean"
                     },
                     "maxConnections": {
@@ -277,6 +544,9 @@
                     "waitTimeout": {
                       "type": "string",
                       "format": "int64"
+                    },
+                    "isDefault": {
+                      "type": "boolean"
                     },
                     "createdAt": {
                       "type": "string",
@@ -474,6 +744,9 @@
                     "html": {
                       "type": "string"
                     },
+                    "isDefault": {
+                      "type": "boolean"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -525,6 +798,61 @@
         }
       }
     },
+    "v1Client": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "templateId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "isDefault": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1CreateClientRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "templateId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1CreateClientResponse": {
+      "type": "object",
+      "properties": {
+        "client": {
+          "$ref": "#/definitions/v1Client"
+        }
+      }
+    },
     "v1CreateServerRequest": {
       "type": "object",
       "properties": {
@@ -544,10 +872,10 @@
         "password": {
           "type": "string"
         },
-        "tls": {
+        "tlsType": {
           "type": "string"
         },
-        "skipTls": {
+        "tlsSkipVerify": {
           "type": "boolean"
         },
         "maxConnections": {
@@ -598,11 +926,34 @@
         }
       }
     },
+    "v1DeleteClientResponse": {
+      "type": "object"
+    },
     "v1DeleteServerResponse": {
       "type": "object"
     },
     "v1DeleteTemplateResponse": {
       "type": "object"
+    },
+    "v1GetClientResponse": {
+      "type": "object",
+      "properties": {
+        "client": {
+          "$ref": "#/definitions/v1Client"
+        }
+      }
+    },
+    "v1GetClientsResponse": {
+      "type": "object",
+      "properties": {
+        "clients": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Client"
+          }
+        }
+      }
     },
     "v1GetServerResponse": {
       "type": "object",
@@ -666,6 +1017,36 @@
     "v1LogoutResponse": {
       "type": "object"
     },
+    "v1SendMailRequest": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "cc": {
+          "type": "string"
+        },
+        "bcc": {
+          "type": "string"
+        },
+        "content": {
+          "$ref": "#/definitions/protobufAny"
+        }
+      }
+    },
+    "v1SendMailResponse": {
+      "type": "object"
+    },
     "v1Server": {
       "type": "object",
       "properties": {
@@ -689,10 +1070,10 @@
         "password": {
           "type": "string"
         },
-        "tls": {
+        "tlsType": {
           "type": "string"
         },
-        "skipTls": {
+        "tlsSkipVerify": {
           "type": "boolean"
         },
         "maxConnections": {
@@ -710,6 +1091,9 @@
         "waitTimeout": {
           "type": "string",
           "format": "int64"
+        },
+        "isDefault": {
+          "type": "boolean"
         },
         "createdAt": {
           "type": "string",
@@ -737,6 +1121,9 @@
         "html": {
           "type": "string"
         },
+        "isDefault": {
+          "type": "boolean"
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time"
@@ -744,6 +1131,62 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "v1TestSendMailRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "string",
+          "format": "int64"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "tlsType": {
+          "type": "string"
+        },
+        "tlsSkipVerify": {
+          "type": "boolean"
+        },
+        "maxConnections": {
+          "type": "string",
+          "format": "int64"
+        },
+        "idleTimeout": {
+          "type": "string",
+          "format": "int64"
+        },
+        "retries": {
+          "type": "string",
+          "format": "int64"
+        },
+        "to": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "v1TestSendMailResponse": {
+      "type": "object"
+    },
+    "v1UpdateClientResponse": {
+      "type": "object",
+      "properties": {
+        "client": {
+          "$ref": "#/definitions/v1Client"
         }
       }
     },

@@ -7,6 +7,7 @@ import (
 	"github.com/dinhcanh303/mail-server/cmd/mail/config"
 	"github.com/dinhcanh303/mail-server/internal/mail/domain"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/client"
+	"github.com/dinhcanh303/mail-server/internal/mail/usecases/sendmail"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/server"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/template"
 	"github.com/google/wire"
@@ -19,10 +20,11 @@ import (
 
 type mailGRPCServer struct {
 	v1.UnimplementedMailServiceServer
-	ucTemp   template.UseCase
-	ucServer server.UseCase
-	ucClient client.UseCase
-	cfg      *config.Config
+	ucTemp     template.UseCase
+	ucServer   server.UseCase
+	ucClient   client.UseCase
+	ucSendMail sendmail.UseCase
+	cfg        *config.Config
 }
 
 var _ v1.MailServiceServer = (*mailGRPCServer)(nil)
@@ -38,13 +40,15 @@ func NewMailGRPCServer(
 	ucTemp template.UseCase,
 	ucServer server.UseCase,
 	ucClient client.UseCase,
+	ucSendMail sendmail.UseCase,
 	cfg *config.Config,
 ) v1.MailServiceServer {
 	svc := mailGRPCServer{
-		ucTemp:   ucTemp,
-		ucServer: ucServer,
-		ucClient: ucClient,
-		cfg:      cfg,
+		ucTemp:     ucTemp,
+		ucServer:   ucServer,
+		ucClient:   ucClient,
+		ucSendMail: ucSendMail,
+		cfg:        cfg,
 	}
 	v1.RegisterMailServiceServer(grpcServer, &svc)
 	reflection.Register(grpcServer)
@@ -72,8 +76,8 @@ func (m *mailGRPCServer) CreateServer(ctx context.Context, request *v1.CreateSer
 		request.Port,
 		request.Username,
 		request.Password,
-		request.Tls,
-		request.SkipTls,
+		request.TlsType,
+		request.TlsSkipVerify,
 		request.MaxConnections,
 		request.Retries,
 		request.IdleTimeout,
@@ -123,8 +127,8 @@ func (m *mailGRPCServer) UpdateServer(ctx context.Context, request *v1.UpdateSer
 		Port:           request.Server.Port,
 		UserName:       request.Server.Username,
 		Password:       request.Server.Password,
-		TLS:            domain.TLSType(request.Server.Tls),
-		SkipTLSVerify:  request.Server.SkipTls,
+		TLSType:        domain.TLSType(request.Server.TlsType),
+		TLSSkipVerify:  request.Server.TlsSkipVerify,
 		MaxConnections: request.Server.MaxConnections,
 		Retries:        request.Server.Retries,
 		IdleTimeout:    request.Server.IdleTimeout,
@@ -246,6 +250,20 @@ func (m *mailGRPCServer) UpdateClient(ctx context.Context, request *v1.UpdateCli
 func (m *mailGRPCServer) TestSendMail(ctx context.Context, request *v1.TestSendMailRequest) (*v1.TestSendMailResponse, error) {
 	return nil, nil
 }
+func (m *mailGRPCServer) SendMail(ctx context.Context, request *v1.SendMailRequest) (*v1.SendMailResponse, error) {
+	err := m.ucSendMail.SendMail(ctx, int64(request.ClientId), &domain.History{
+		From:    request.From,
+		To:      request.To,
+		Subject: request.Subject,
+		Cc:      request.Cc,
+		Bcc:     request.Bcc,
+		Status:  "pending",
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "ucSendMail.SendMail failed")
+	}
+	return nil, nil
+}
 
 func entityServerToProtobuf(entity *domain.Server) *v1.Server {
 	return &v1.Server{
@@ -255,12 +273,13 @@ func entityServerToProtobuf(entity *domain.Server) *v1.Server {
 		Port:           entity.Port,
 		Username:       entity.UserName,
 		Password:       entity.Password,
-		Tls:            string(entity.TLS),
-		SkipTls:        entity.SkipTLSVerify,
+		TlsType:        string(entity.TLSType),
+		TlsSkipVerify:  entity.TLSSkipVerify,
 		MaxConnections: entity.MaxConnections,
 		IdleTimeout:    entity.IdleTimeout,
 		Retries:        entity.Retries,
 		WaitTimeout:    entity.WaitTimeout,
+		IsDefault:      entity.IsDefault,
 		CreatedAt:      timestamppb.New(entity.CreatedAt),
 		UpdatedAt:      timestamppb.New(entity.UpdatedAt),
 	}
@@ -271,6 +290,7 @@ func entityTemplateToProtobuf(entity *domain.Template) *v1.Template {
 		Name:      entity.Name,
 		Status:    entity.Status,
 		Html:      entity.Html,
+		IsDefault: entity.IsDefault,
 		CreatedAt: timestamppb.New(entity.CreatedAt),
 		UpdatedAt: timestamppb.New(entity.UpdatedAt),
 	}
@@ -281,6 +301,7 @@ func entityClientToProtobuf(entity *domain.Client) *v1.Client {
 		Name:       entity.Name,
 		ServerId:   entity.ServerID,
 		TemplateId: entity.TemplateID,
+		IsDefault:  entity.IsDefault,
 		CreatedAt:  timestamppb.New(entity.CreatedAt),
 		UpdatedAt:  timestamppb.New(entity.UpdatedAt),
 	}

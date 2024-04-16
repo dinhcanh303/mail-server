@@ -7,6 +7,7 @@ type Template struct {
 	Name      string    `json:"name"`
 	Status    string    `json:"status"`
 	Html      string    `json:"html"`
+	IsDefault bool      `json:"is_default"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
