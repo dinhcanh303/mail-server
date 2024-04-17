@@ -7,6 +7,7 @@ export interface CreateServerRequest {
   username: string
   password: string
 }
+export type CreateServerResponse = Server
 export interface GetServersResponse {
   servers: Server[]
 }

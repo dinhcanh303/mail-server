@@ -1,4 +1,4 @@
-import { getServers } from '@/apis/server.api'
+import { createServer, getServers } from '@/apis/server.api'
 import { Server as ModelServer } from '@/models/Server'
 import { useQuery } from '@tanstack/react-query'
 import { BreadCrumb } from 'primereact/breadcrumb'
@@ -10,8 +10,6 @@ import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown'
 import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber'
 import { InputSwitch, InputSwitchChangeEvent } from 'primereact/inputswitch'
 import { InputText } from 'primereact/inputtext'
-import { InputTextarea } from 'primereact/inputtextarea'
-import { RadioButton } from 'primereact/radiobutton'
 import { Tag } from 'primereact/tag'
 import { Toast } from 'primereact/toast'
 import { Toolbar } from 'primereact/toolbar'
@@ -20,6 +18,7 @@ import React, { useEffect, useRef, useState } from 'react'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface ServerProps {}
+
 // eslint-disable-next-line no-empty-pattern
 const Server: React.FC<ServerProps> = ({}) => {
   const items = [{ label: 'Servers' }]
@@ -40,10 +39,10 @@ const Server: React.FC<ServerProps> = ({}) => {
   }
   const [servers, setServers] = useState(null)
   const [serverDialog, setServerDialog] = useState(false)
-  const [deleteProductDialog, setDeleteProductDialog] = useState(false)
-  const [deleteProductsDialog, setDeleteProductsDialog] = useState(false)
+  const [deleteServerDialog, setDeleteServerDialog] = useState(false)
+  const [deleteServersDialog, setDeleteServersDialog] = useState(false)
   const [server, setServer] = useState<ModelServer>(emptyServer)
-  const [selectedProducts, setSelectedProducts] = useState(null)
+  const [selectedServers, setSelectedServers] = useState<ModelServer | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [globalFilter, setGlobalFilter] = useState(null)
   const toast = useRef(null)
@@ -63,9 +62,8 @@ const Server: React.FC<ServerProps> = ({}) => {
   useEffect(() => {
     setServers(tmp)
   }, [tmp])
-
   const openNew = () => {
-    // setProduct(emptyProduct)
+    setServer(emptyServer)
     setSubmitted(false)
     setServerDialog(true)
   }
@@ -75,54 +73,46 @@ const Server: React.FC<ServerProps> = ({}) => {
     setServerDialog(false)
   }
 
-  const hideDeleteProductDialog = () => {
-    setDeleteProductDialog(false)
+  const hideDeleteServerDialog = () => {
+    setDeleteServerDialog(false)
   }
 
-  const hideDeleteProductsDialog = () => {
-    setDeleteProductsDialog(false)
+  const hideDeleteServersDialog = () => {
+    setDeleteServersDialog(false)
   }
 
-  // const saveProduct = () => {
-  //   setSubmitted(true)
-
-  //   if (product.name.trim()) {
-  //     const _products = [...products]
-  //     const _product = { ...product }
-
-  //     if (product.id) {
-  //       const index = findIndexById(product.id)
-
-  //       _products[index] = _product
-  //       toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 })
-  //     } else {
-  //       _product.id = createId()
-  //       _product.image = 'product-placeholder.svg'
-  //       _products.push(_product)
-  //       toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 })
-  //     }
-
-  //     setProducts(_products)
-  //     setProductDialog(false)
-  //     setProduct(emptyProduct)
-  //   }
-  // }
+  const handleCreateServer = async () => {
+    setSubmitted(true)
+    if (server.name.trim()) {
+      try {
+        console.log(server)
+        const res = await createServer(server)
+        if (res?.status == 200) {
+          toast?.current?.show({ severity: 'success', summary: 'Success', detail: 'Server Created Successfully' })
+          setServerDialog(false)
+          setServer(emptyServer)
+        } else toast?.current?.show({ severity: 'warning', summary: 'Warning', detail: 'Server Created Failed' })
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  }
 
   const editServer = (server: ModelServer) => {
     setServer({ ...server })
     setServerDialog(true)
   }
 
-  // const confirmDeleteProduct = (product) => {
-  //   setProduct(product)
-  //   setDeleteProductDialog(true)
-  // }
+  const confirmDeleteServer = (rowData: ModelServer) => {
+    // setProduct(product)
+    setDeleteServerDialog(true)
+  }
 
   // const deleteProduct = () => {
   //   const _products = products.filter((val) => val.id !== product.id)
 
   //   setProducts(_products)
-  //   setDeleteProductDialog(false)
+  //   setDeleteServerDialog(false)
   //   setProduct(emptyProduct)
   //   toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 })
   // }
@@ -152,14 +142,14 @@ const Server: React.FC<ServerProps> = ({}) => {
   // }
 
   // const confirmDeleteSelected = () => {
-  //   setDeleteProductsDialog(true)
+  //   setDeleteServersDialog(true)
   // }
 
   // const deleteSelectedProducts = () => {
   //   const _products = products.filter((val) => !selectedProducts.includes(val))
 
   //   setProducts(_products)
-  //   setDeleteProductsDialog(false)
+  //   setDeleteServersDialog(false)
   //   setSelectedProducts(null)
   //   toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 })
   // }
@@ -180,7 +170,6 @@ const Server: React.FC<ServerProps> = ({}) => {
   }
 
   const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
-    console.log(name)
     const val = e.value || 0
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const _server: any = { ...server }
@@ -222,30 +211,28 @@ const Server: React.FC<ServerProps> = ({}) => {
       <h4 className='m-0'>Servers</h4>
       <span className='p-input-icon-left flex'>
         <InputText type='search' onInput={(e) => setGlobalFilter(e.target?.value)} placeholder='Search...' />
-        {/* <i className='pi pi-search ml-2' /> */}
       </span>
     </div>
   )
   const serverDialogFooter = (
-    <React.Fragment>
+    <>
       <Button label='Cancel' icon='pi pi-times' outlined onClick={hideDialog} />
-      {/* <Button label='Save' icon='pi pi-check' onClick={saveProduct} /> */}
-    </React.Fragment>
+      <Button label='Save' icon='pi pi-check' onClick={handleCreateServer} />
+    </>
   )
-  const deleteProductDialogFooter = (
-    <React.Fragment>
-      <Button label='No' icon='pi pi-times' outlined onClick={hideDeleteProductDialog} />
+  const deleteServerDialogFooter = (
+    <>
+      <Button label='No' icon='pi pi-times' outlined onClick={hideDeleteServerDialog} />
       {/* <Button label='Yes' icon='pi pi-check' severity='danger' onClick={deleteProduct} /> */}
-    </React.Fragment>
+    </>
   )
-  const deleteProductsDialogFooter = (
-    <React.Fragment>
-      <Button label='No' icon='pi pi-times' outlined onClick={hideDeleteProductsDialog} />
+  const deleteServersDialogFooter = (
+    <>
+      <Button label='No' icon='pi pi-times' outlined onClick={hideDeleteServersDialog} />
       {/* <Button label='Yes' icon='pi pi-check' severity='danger' onClick={deleteSelectedProducts} /> */}
-    </React.Fragment>
+    </>
   )
   const statusBodyTemplate = (rowData: ModelServer) => {
-    console.log(rowData)
     switch (rowData.isDefault) {
       case true:
         return <Tag value='default' severity='info'></Tag>
@@ -266,8 +253,9 @@ const Server: React.FC<ServerProps> = ({}) => {
           rounded
           outlined
           text
-          severity='danger'
-          // onClick={() => confirmDeleteServer(rowData)}
+          severity={rowData.isDefault ? 'secondary' : 'danger'}
+          hidden
+          onClick={rowData.isDefault ? undefined : () => confirmDeleteServer(rowData)}
         />
       </div>
     )
@@ -282,15 +270,15 @@ const Server: React.FC<ServerProps> = ({}) => {
           <DataTable
             ref={dt}
             value={servers}
-            selection={selectedProducts}
-            // onSelectionChange={(e) => setSelectedProducts(e.value)}
+            selection={selectedServers}
+            onSelectionChange={(e) => setSelectedServers(e.value as ModelServer)}
             dataKey='id'
             paginator
             rows={10}
             size='small'
             rowsPerPageOptions={[5, 10, 25]}
             paginatorTemplate='FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown'
-            currentPageReportTemplate='Showing {first} to {last} of {totalRecords} products'
+            currentPageReportTemplate='Showing {first} to {last} of {totalRecords} servers'
             globalFilter={globalFilter}
             header={header}
           >
@@ -486,13 +474,13 @@ const Server: React.FC<ServerProps> = ({}) => {
         </Dialog>
 
         <Dialog
-          visible={deleteProductDialog}
+          visible={deleteServerDialog}
           style={{ width: '32rem' }}
           breakpoints={{ '960px': '75vw', '641px': '90vw' }}
           header='Confirm'
           modal
-          footer={deleteProductDialogFooter}
-          onHide={hideDeleteProductDialog}
+          footer={deleteServerDialogFooter}
+          onHide={hideDeleteServerDialog}
         >
           <div className='confirmation-content'>
             <i className='pi pi-exclamation-triangle mr-3' style={{ fontSize: '2rem' }} />
@@ -505,13 +493,13 @@ const Server: React.FC<ServerProps> = ({}) => {
         </Dialog>
 
         <Dialog
-          visible={deleteProductsDialog}
+          visible={deleteServersDialog}
           style={{ width: '32rem' }}
           breakpoints={{ '960px': '75vw', '641px': '90vw' }}
           header='Confirm'
           modal
-          footer={deleteProductsDialogFooter}
-          onHide={hideDeleteProductsDialog}
+          footer={deleteServersDialogFooter}
+          onHide={hideDeleteServersDialog}
         >
           <div className='confirmation-content'>
             <i className='pi pi-exclamation-triangle mr-3' style={{ fontSize: '2rem' }} />
