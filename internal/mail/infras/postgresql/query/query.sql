@@ -51,6 +51,9 @@ SELECT * FROM mail.templates WHERE id = $1;
 -- name: GetTemplates :many
 SELECT * FROM mail.templates LIMIT $1 OFFSET $2;
 
+-- name: GetTemplatesActive :many
+SELECT * FROM mail.templates WHERE status = 'active';
+
 -- name: UpdateTemplate :one
 UPDATE mail.templates SET 
     name = COALESCE(sqlc.narg(name),name),

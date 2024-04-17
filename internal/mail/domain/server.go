@@ -5,9 +5,9 @@ import "time"
 type TLSType string
 
 const (
-	TLSOff   TLSType = "off"
-	StartTLC TLSType = "start_tls"
-	SSL_TLS  TLSType = "ssl/tls"
+	TLSOff   TLSType = "OFF"
+	StartTLC TLSType = "STARTTLS"
+	SSL_TLS  TLSType = "TLS"
 )
 
 type Server struct {

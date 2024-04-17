@@ -64,6 +64,15 @@ func (s *service) GetTemplates(ctx context.Context, limit int32, offset int32) (
 	return templates, nil
 }
 
+// GetTemplatesActive implements UseCase.
+func (s *service) GetTemplatesActive(ctx context.Context) ([]*domain.Template, error) {
+	templates, err := s.repo.GetTemplatesActive(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "service.GetTemplatesActive failed")
+	}
+	return templates, nil
+}
+
 // UpdateTemplate implements UseCase.
 func (s *service) UpdateTemplate(ctx context.Context, template *domain.Template) (*domain.Template, error) {
 	template, err := s.repo.UpdateTemplate(ctx, template)

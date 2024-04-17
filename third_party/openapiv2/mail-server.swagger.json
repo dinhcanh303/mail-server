@@ -637,6 +637,29 @@
         ]
       }
     },
+    "/api/v1/templates/active": {
+      "get": {
+        "summary": "Get all template active mail service",
+        "operationId": "MailService_GetTemplatesActive",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetTemplatesActiveResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "MailService"
+        ]
+      }
+    },
     "/api/v1/templates/{id}": {
       "get": {
         "summary": "Get template mail service",
@@ -832,16 +855,8 @@
     "v1CreateClientRequest": {
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string"
-        },
-        "serverId": {
-          "type": "string",
-          "format": "int64"
-        },
-        "templateId": {
-          "type": "string",
-          "format": "int64"
+        "client": {
+          "$ref": "#/definitions/v1Client"
         }
       }
     },
@@ -856,43 +871,8 @@
     "v1CreateServerRequest": {
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string"
-        },
-        "host": {
-          "type": "string"
-        },
-        "port": {
-          "type": "string",
-          "format": "int64"
-        },
-        "username": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        },
-        "tlsType": {
-          "type": "string"
-        },
-        "tlsSkipVerify": {
-          "type": "boolean"
-        },
-        "maxConnections": {
-          "type": "string",
-          "format": "int64"
-        },
-        "idleTimeout": {
-          "type": "string",
-          "format": "int64"
-        },
-        "retries": {
-          "type": "string",
-          "format": "int64"
-        },
-        "waitTimeout": {
-          "type": "string",
-          "format": "int64"
+        "server": {
+          "$ref": "#/definitions/v1Server"
         }
       }
     },
@@ -907,14 +887,8 @@
     "v1CreateTemplateRequest": {
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string"
-        },
-        "status": {
-          "type": "string"
-        },
-        "html": {
-          "type": "string"
+        "template": {
+          "$ref": "#/definitions/v1Template"
         }
       }
     },
@@ -980,6 +954,18 @@
       "properties": {
         "template": {
           "$ref": "#/definitions/v1Template"
+        }
+      }
+    },
+    "v1GetTemplatesActiveResponse": {
+      "type": "object",
+      "properties": {
+        "templates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Template"
+          }
         }
       }
     },

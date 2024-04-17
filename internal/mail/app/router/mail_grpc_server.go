@@ -71,17 +71,17 @@ func (m *mailGRPCServer) Logout(ctx context.Context, request *v1.LogoutRequest) 
 	return &v1.LogoutResponse{}, nil
 }
 func (m *mailGRPCServer) CreateServer(ctx context.Context, request *v1.CreateServerRequest) (*v1.CreateServerResponse, error) {
-	model := domain.NewServer(request.Name,
-		request.Host,
-		request.Port,
-		request.Username,
-		request.Password,
-		request.TlsType,
-		request.TlsSkipVerify,
-		request.MaxConnections,
-		request.Retries,
-		request.IdleTimeout,
-		request.WaitTimeout)
+	model := domain.NewServer(request.Server.Name,
+		request.Server.Host,
+		request.Server.Port,
+		request.Server.Username,
+		request.Server.Password,
+		request.Server.TlsType,
+		request.Server.TlsSkipVerify,
+		request.Server.MaxConnections,
+		request.Server.Retries,
+		request.Server.IdleTimeout,
+		request.Server.WaitTimeout)
 	result, err := m.ucServer.CreateServer(ctx, model)
 	if err != nil {
 		return nil, errors.Wrap(err, "ucServer.CreateServer failed")
@@ -142,7 +142,7 @@ func (m *mailGRPCServer) UpdateServer(ctx context.Context, request *v1.UpdateSer
 	}, nil
 }
 func (m *mailGRPCServer) CreateTemplate(ctx context.Context, request *v1.CreateTemplateRequest) (*v1.CreateTemplateResponse, error) {
-	model := domain.NewTemplate(request.Name, request.Status, request.Html)
+	model := domain.NewTemplate(request.Template.Name, request.Template.Status, request.Template.Html)
 	result, err := m.ucTemp.CreateTemplate(ctx, model)
 	if err != nil {
 		return nil, errors.Wrap(err, "ucTemp.CreateTemplate failed")
@@ -166,6 +166,17 @@ func (m *mailGRPCServer) GetTemplates(ctx context.Context, request *v1.GetTempla
 		return nil, errors.Wrap(err, "ucTemp.GetTemplates failed")
 	}
 	return &v1.GetTemplatesResponse{
+		Templates: lo.Map(results, func(item *domain.Template, _ int) *v1.Template {
+			return entityTemplateToProtobuf(item)
+		}),
+	}, nil
+}
+func (m *mailGRPCServer) GetTemplatesActive(ctx context.Context, request *v1.GetTemplatesActiveRequest) (*v1.GetTemplatesActiveResponse, error) {
+	results, err := m.ucTemp.GetTemplatesActive(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "ucTemp.GetTemplates failed")
+	}
+	return &v1.GetTemplatesActiveResponse{
 		Templates: lo.Map(results, func(item *domain.Template, _ int) *v1.Template {
 			return entityTemplateToProtobuf(item)
 		}),
@@ -195,9 +206,9 @@ func (m *mailGRPCServer) UpdateTemplate(ctx context.Context, request *v1.UpdateT
 
 func (m *mailGRPCServer) CreateClient(ctx context.Context, request *v1.CreateClientRequest) (*v1.CreateClientResponse, error) {
 	result, err := m.ucClient.CreateClient(ctx, &domain.Client{
-		Name:       request.Name,
-		ServerID:   request.ServerId,
-		TemplateID: request.TemplateId,
+		Name:       request.Client.Name,
+		ServerID:   request.Client.ServerId,
+		TemplateID: request.Client.TemplateId,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "ucTemp.CreateClient failed")

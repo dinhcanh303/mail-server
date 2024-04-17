@@ -19,25 +19,26 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	MailService_SignIn_FullMethodName         = "/mail.v1.MailService/SignIn"
-	MailService_Logout_FullMethodName         = "/mail.v1.MailService/Logout"
-	MailService_CreateServer_FullMethodName   = "/mail.v1.MailService/CreateServer"
-	MailService_UpdateServer_FullMethodName   = "/mail.v1.MailService/UpdateServer"
-	MailService_GetServer_FullMethodName      = "/mail.v1.MailService/GetServer"
-	MailService_GetServers_FullMethodName     = "/mail.v1.MailService/GetServers"
-	MailService_DeleteServer_FullMethodName   = "/mail.v1.MailService/DeleteServer"
-	MailService_CreateTemplate_FullMethodName = "/mail.v1.MailService/CreateTemplate"
-	MailService_UpdateTemplate_FullMethodName = "/mail.v1.MailService/UpdateTemplate"
-	MailService_GetTemplate_FullMethodName    = "/mail.v1.MailService/GetTemplate"
-	MailService_GetTemplates_FullMethodName   = "/mail.v1.MailService/GetTemplates"
-	MailService_DeleteTemplate_FullMethodName = "/mail.v1.MailService/DeleteTemplate"
-	MailService_CreateClient_FullMethodName   = "/mail.v1.MailService/CreateClient"
-	MailService_UpdateClient_FullMethodName   = "/mail.v1.MailService/UpdateClient"
-	MailService_GetClient_FullMethodName      = "/mail.v1.MailService/GetClient"
-	MailService_GetClients_FullMethodName     = "/mail.v1.MailService/GetClients"
-	MailService_DeleteClient_FullMethodName   = "/mail.v1.MailService/DeleteClient"
-	MailService_SendMail_FullMethodName       = "/mail.v1.MailService/SendMail"
-	MailService_TestSendMail_FullMethodName   = "/mail.v1.MailService/TestSendMail"
+	MailService_SignIn_FullMethodName             = "/mail.v1.MailService/SignIn"
+	MailService_Logout_FullMethodName             = "/mail.v1.MailService/Logout"
+	MailService_CreateServer_FullMethodName       = "/mail.v1.MailService/CreateServer"
+	MailService_UpdateServer_FullMethodName       = "/mail.v1.MailService/UpdateServer"
+	MailService_GetServer_FullMethodName          = "/mail.v1.MailService/GetServer"
+	MailService_GetServers_FullMethodName         = "/mail.v1.MailService/GetServers"
+	MailService_DeleteServer_FullMethodName       = "/mail.v1.MailService/DeleteServer"
+	MailService_CreateTemplate_FullMethodName     = "/mail.v1.MailService/CreateTemplate"
+	MailService_UpdateTemplate_FullMethodName     = "/mail.v1.MailService/UpdateTemplate"
+	MailService_GetTemplate_FullMethodName        = "/mail.v1.MailService/GetTemplate"
+	MailService_GetTemplates_FullMethodName       = "/mail.v1.MailService/GetTemplates"
+	MailService_GetTemplatesActive_FullMethodName = "/mail.v1.MailService/GetTemplatesActive"
+	MailService_DeleteTemplate_FullMethodName     = "/mail.v1.MailService/DeleteTemplate"
+	MailService_CreateClient_FullMethodName       = "/mail.v1.MailService/CreateClient"
+	MailService_UpdateClient_FullMethodName       = "/mail.v1.MailService/UpdateClient"
+	MailService_GetClient_FullMethodName          = "/mail.v1.MailService/GetClient"
+	MailService_GetClients_FullMethodName         = "/mail.v1.MailService/GetClients"
+	MailService_DeleteClient_FullMethodName       = "/mail.v1.MailService/DeleteClient"
+	MailService_SendMail_FullMethodName           = "/mail.v1.MailService/SendMail"
+	MailService_TestSendMail_FullMethodName       = "/mail.v1.MailService/TestSendMail"
 )
 
 // MailServiceClient is the client API for MailService service.
@@ -55,6 +56,7 @@ type MailServiceClient interface {
 	UpdateTemplate(ctx context.Context, in *UpdateTemplateRequest, opts ...grpc.CallOption) (*UpdateTemplateResponse, error)
 	GetTemplate(ctx context.Context, in *GetTemplateRequest, opts ...grpc.CallOption) (*GetTemplateResponse, error)
 	GetTemplates(ctx context.Context, in *GetTemplatesRequest, opts ...grpc.CallOption) (*GetTemplatesResponse, error)
+	GetTemplatesActive(ctx context.Context, in *GetTemplatesActiveRequest, opts ...grpc.CallOption) (*GetTemplatesActiveResponse, error)
 	DeleteTemplate(ctx context.Context, in *DeleteTemplateRequest, opts ...grpc.CallOption) (*DeleteTemplateResponse, error)
 	CreateClient(ctx context.Context, in *CreateClientRequest, opts ...grpc.CallOption) (*CreateClientResponse, error)
 	UpdateClient(ctx context.Context, in *UpdateClientRequest, opts ...grpc.CallOption) (*UpdateClientResponse, error)
@@ -172,6 +174,15 @@ func (c *mailServiceClient) GetTemplates(ctx context.Context, in *GetTemplatesRe
 	return out, nil
 }
 
+func (c *mailServiceClient) GetTemplatesActive(ctx context.Context, in *GetTemplatesActiveRequest, opts ...grpc.CallOption) (*GetTemplatesActiveResponse, error) {
+	out := new(GetTemplatesActiveResponse)
+	err := c.cc.Invoke(ctx, MailService_GetTemplatesActive_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *mailServiceClient) DeleteTemplate(ctx context.Context, in *DeleteTemplateRequest, opts ...grpc.CallOption) (*DeleteTemplateResponse, error) {
 	out := new(DeleteTemplateResponse)
 	err := c.cc.Invoke(ctx, MailService_DeleteTemplate_FullMethodName, in, out, opts...)
@@ -259,6 +270,7 @@ type MailServiceServer interface {
 	UpdateTemplate(context.Context, *UpdateTemplateRequest) (*UpdateTemplateResponse, error)
 	GetTemplate(context.Context, *GetTemplateRequest) (*GetTemplateResponse, error)
 	GetTemplates(context.Context, *GetTemplatesRequest) (*GetTemplatesResponse, error)
+	GetTemplatesActive(context.Context, *GetTemplatesActiveRequest) (*GetTemplatesActiveResponse, error)
 	DeleteTemplate(context.Context, *DeleteTemplateRequest) (*DeleteTemplateResponse, error)
 	CreateClient(context.Context, *CreateClientRequest) (*CreateClientResponse, error)
 	UpdateClient(context.Context, *UpdateClientRequest) (*UpdateClientResponse, error)
@@ -306,6 +318,9 @@ func (UnimplementedMailServiceServer) GetTemplate(context.Context, *GetTemplateR
 }
 func (UnimplementedMailServiceServer) GetTemplates(context.Context, *GetTemplatesRequest) (*GetTemplatesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTemplates not implemented")
+}
+func (UnimplementedMailServiceServer) GetTemplatesActive(context.Context, *GetTemplatesActiveRequest) (*GetTemplatesActiveResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTemplatesActive not implemented")
 }
 func (UnimplementedMailServiceServer) DeleteTemplate(context.Context, *DeleteTemplateRequest) (*DeleteTemplateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTemplate not implemented")
@@ -542,6 +557,24 @@ func _MailService_GetTemplates_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MailService_GetTemplatesActive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTemplatesActiveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MailServiceServer).GetTemplatesActive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MailService_GetTemplatesActive_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MailServiceServer).GetTemplatesActive(ctx, req.(*GetTemplatesActiveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MailService_DeleteTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteTemplateRequest)
 	if err := dec(in); err != nil {
@@ -736,6 +769,10 @@ var MailService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTemplates",
 			Handler:    _MailService_GetTemplates_Handler,
+		},
+		{
+			MethodName: "GetTemplatesActive",
+			Handler:    _MailService_GetTemplatesActive_Handler,
 		},
 		{
 			MethodName: "DeleteTemplate",

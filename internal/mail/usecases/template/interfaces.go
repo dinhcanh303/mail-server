@@ -12,6 +12,7 @@ type TemplateRepo interface {
 	DeleteTemplate(ctx context.Context, id int64) error
 	GetTemplate(ctx context.Context, id int64) (*domain.Template, error)
 	GetTemplates(ctx context.Context, limit, offset int32) ([]*domain.Template, error)
+	GetTemplatesActive(ctx context.Context) ([]*domain.Template, error)
 }
 type UseCase interface {
 	CreateTemplate(context.Context, *domain.Template) (*domain.Template, error)
@@ -19,4 +20,5 @@ type UseCase interface {
 	DeleteTemplate(ctx context.Context, id int64) error
 	GetTemplate(ctx context.Context, id int64) (*domain.Template, error)
 	GetTemplates(ctx context.Context, limit, offset int32) ([]*domain.Template, error)
+	GetTemplatesActive(ctx context.Context) ([]*domain.Template, error)
 }

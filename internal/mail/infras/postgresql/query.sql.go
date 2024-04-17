@@ -481,6 +481,41 @@ func (q *Queries) GetTemplates(ctx context.Context, arg GetTemplatesParams) ([]M
 	return items, nil
 }
 
+const getTemplatesActive = `-- name: GetTemplatesActive :many
+SELECT id, name, html, status, is_default, created_at, updated_at FROM mail.templates WHERE status = 'active'
+`
+
+func (q *Queries) GetTemplatesActive(ctx context.Context) ([]MailTemplate, error) {
+	rows, err := q.db.QueryContext(ctx, getTemplatesActive)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MailTemplate
+	for rows.Next() {
+		var i MailTemplate
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Html,
+			&i.Status,
+			&i.IsDefault,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateClient = `-- name: UpdateClient :one
 UPDATE mail.clients SET 
     name = COALESCE($1,name),

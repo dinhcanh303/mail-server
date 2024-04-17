@@ -94,6 +94,19 @@ func (t *templateRepo) GetTemplates(ctx context.Context, limit int32, offset int
 	}), nil
 }
 
+// GetTemplatesActive implements template.UseCase.
+func (t *templateRepo) GetTemplatesActive(ctx context.Context) ([]*domain.Template, error) {
+	db := t.pg.GetDB()
+	querier := postgresql.New(db)
+	results, err := querier.GetTemplatesActive(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "templateRepo.GetTemplatesActive failed")
+	}
+	return lo.Map(results, func(item postgresql.MailTemplate, _ int) *domain.Template {
+		return repoTemplateToDomainTemplate(item)
+	}), nil
+}
+
 // UpdateTemplate implements template.UseCase.
 func (t *templateRepo) UpdateTemplate(ctx context.Context, template *domain.Template) (*domain.Template, error) {
 	db := t.pg.GetDB()

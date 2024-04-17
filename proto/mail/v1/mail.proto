@@ -114,6 +114,15 @@ service MailService {
             description: ""
         };
     }
+    rpc GetTemplatesActive(GetTemplatesActiveRequest) returns (GetTemplatesActiveResponse){
+        option (google.api.http) = {
+            get: "/api/v1/templates/active",
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Get all template active mail service"
+            description: ""
+        };
+    }
     rpc DeleteTemplate(DeleteTemplateRequest) returns (DeleteTemplateResponse){
         option (google.api.http) = {
             delete: "/api/v1/templates/{id}",
@@ -217,9 +226,7 @@ message SendMailRequest {
 }
 message SendMailResponse{}
 message CreateClientRequest {
-    string name = 1;
-    int64 server_id = 2;
-    int64 template_id = 3;
+    Client client = 1;
 }
 message CreateClientResponse {
     Client client = 1;
@@ -258,9 +265,7 @@ message Client {
 
 }
 message CreateTemplateRequest{
-    string name = 1;
-    string status = 2;
-    string html = 3;
+    Template template = 1;
 }
 message CreateTemplateResponse{
     Template template = 1;
@@ -280,6 +285,10 @@ message GetTemplateResponse{
 message GetTemplatesRequest{
     int32 limit = 1;
     int32 offset = 2;
+}
+message GetTemplatesActiveRequest{}
+message GetTemplatesActiveResponse{
+    repeated Template templates = 1;
 }
 message GetTemplatesResponse{
     repeated Template templates =1;
@@ -315,17 +324,7 @@ message GetServerResponse{
     Server server = 1;
 }
 message CreateServerRequest{
-    string name = 1;
-    string host = 2;
-    int64 port = 3;
-    string username = 4;
-    string password = 5;
-    string tls_type = 6;
-    bool tls_skip_verify = 7;
-    int64 max_connections = 8;
-    int64 idle_timeout = 9;
-    int64 retries = 10;
-    int64 wait_timeout = 11;
+    Server server = 1;
 }
 message CreateServerResponse{
     Server server = 1;
