@@ -155,6 +155,75 @@
         ]
       }
     },
+    "/api/v1/clients/{client.id}/duplicate": {
+      "post": {
+        "summary": "Duplicate client mail service",
+        "operationId": "MailService_DuplicateClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DuplicateClientResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client.id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "client": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "serverId": {
+                      "type": "string",
+                      "format": "int64"
+                    },
+                    "templateId": {
+                      "type": "string",
+                      "format": "int64"
+                    },
+                    "isDefault": {
+                      "type": "boolean"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "MailService"
+        ]
+      }
+    },
     "/api/v1/clients/{id}": {
       "get": {
         "summary": "Get client mail service",
@@ -517,10 +586,124 @@
                       "type": "string",
                       "format": "int64"
                     },
+                    "authProtocol": {
+                      "type": "string"
+                    },
                     "username": {
                       "type": "string"
                     },
                     "password": {
+                      "type": "string"
+                    },
+                    "fromName": {
+                      "type": "string"
+                    },
+                    "fromAddress": {
+                      "type": "string"
+                    },
+                    "tlsType": {
+                      "type": "string"
+                    },
+                    "tlsSkipVerify": {
+                      "type": "boolean"
+                    },
+                    "maxConnections": {
+                      "type": "string",
+                      "format": "int64"
+                    },
+                    "idleTimeout": {
+                      "type": "string",
+                      "format": "int64"
+                    },
+                    "retries": {
+                      "type": "string",
+                      "format": "int64"
+                    },
+                    "waitTimeout": {
+                      "type": "string",
+                      "format": "int64"
+                    },
+                    "isDefault": {
+                      "type": "boolean"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "MailService"
+        ]
+      }
+    },
+    "/api/v1/servers/{server.id}/duplicate": {
+      "post": {
+        "summary": "Duplicate server mail service",
+        "operationId": "MailService_DuplicateServer",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DuplicateServerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "server.id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "host": {
+                      "type": "string"
+                    },
+                    "port": {
+                      "type": "string",
+                      "format": "int64"
+                    },
+                    "authProtocol": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "fromName": {
+                      "type": "string"
+                    },
+                    "fromAddress": {
                       "type": "string"
                     },
                     "tlsType": {
@@ -788,6 +971,73 @@
           "MailService"
         ]
       }
+    },
+    "/api/v1/templates/{template.id}/duplicate": {
+      "post": {
+        "summary": "Duplicate template mail service",
+        "operationId": "MailService_DuplicateTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DuplicateTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "template.id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "template": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "html": {
+                      "type": "string"
+                    },
+                    "isDefault": {
+                      "type": "boolean"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "MailService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -908,6 +1158,30 @@
     },
     "v1DeleteTemplateResponse": {
       "type": "object"
+    },
+    "v1DuplicateClientResponse": {
+      "type": "object",
+      "properties": {
+        "client": {
+          "$ref": "#/definitions/v1Client"
+        }
+      }
+    },
+    "v1DuplicateServerResponse": {
+      "type": "object",
+      "properties": {
+        "server": {
+          "$ref": "#/definitions/v1Server"
+        }
+      }
+    },
+    "v1DuplicateTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "template": {
+          "$ref": "#/definitions/v1Template"
+        }
+      }
     },
     "v1GetClientResponse": {
       "type": "object",
@@ -1050,10 +1324,19 @@
           "type": "string",
           "format": "int64"
         },
+        "authProtocol": {
+          "type": "string"
+        },
         "username": {
           "type": "string"
         },
         "password": {
+          "type": "string"
+        },
+        "fromName": {
+          "type": "string"
+        },
+        "fromAddress": {
           "type": "string"
         },
         "tlsType": {

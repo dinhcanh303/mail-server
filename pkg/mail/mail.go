@@ -2,6 +2,7 @@ package mail
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/smtp"
 
@@ -13,14 +14,19 @@ const (
 	_maxConnections = 10
 	_idleTimeout    = 15
 	_waitTimeout    = 5
+	_tlsType        = "TLS"
 	_skipTls        = false
-	_fromName       = "test@test.com"
+	_fromName       = "test"
+	_fromAddress    = "noreply@test.com"
+	_host           = "google.com"
+	_port           = "465"
+	_authProtocol   = "plain"
 )
 
 type emailSender struct {
-	fromName, fromAddress, username, password, host, port string
-	maxConnections, idleTimeout, waitTimeout, retries     int
-	skipTls                                               bool
+	username, password, host, port, authProtocol, fromName, fromAddress, tlsType string
+	maxConnections, idleTimeout, waitTimeout, retries                            int
+	skipTls                                                                      bool
 }
 
 func (c *emailSender) Configure(opts ...Option) EmailSender {
@@ -34,7 +40,8 @@ func (c *emailSender) Configure(opts ...Option) EmailSender {
 func (sender *emailSender) SendEmail(subject string, content string, to []string, cc []string, bcc []string, attachFiles []string) error {
 	emailFromName := sender.fromName
 	emailFromAddress := sender.fromAddress
-	emailPassword := sender.password
+	username := sender.username
+	password := sender.password
 	emailHost := sender.host
 	emailPort := sender.port
 	e := email.NewEmail()
@@ -50,11 +57,23 @@ func (sender *emailSender) SendEmail(subject string, content string, to []string
 			return fmt.Errorf("failed to attach file %s: %w", f, err)
 		}
 	}
-	smtpAuth := smtp.PlainAuth("", emailFromAddress, emailPassword, emailHost)
+	var smtpAuth smtp.Auth
+	switch sender.authProtocol {
+	case "plain":
+		smtpAuth = smtp.PlainAuth("", emailFromName, password, emailHost)
+	case "cram":
+		smtpAuth = smtp.CRAMMD5Auth(username, password)
+	case "", "none":
+	default:
+		return errors.New("auth protocol not supported")
+	}
 	smtpServerAddress := fmt.Sprintf("%s:%s", emailHost, emailPort)
-	tlsConfig := &tls.Config{
-		InsecureSkipVerify: true,
-		ServerName:         emailHost,
+	var tlsConfig *tls.Config
+	if sender.tlsType != "none" {
+		tlsConfig = &tls.Config{
+			InsecureSkipVerify: sender.skipTls,
+			ServerName:         emailHost,
+		}
 	}
 	if !sender.skipTls {
 		return e.SendWithStartTLS(smtpServerAddress, smtpAuth, tlsConfig)
@@ -68,10 +87,12 @@ func NewEmailSender() EmailSender {
 	return &emailSender{
 		fromName:       _fromName,
 		fromAddress:    _fromName,
+		authProtocol:   _authProtocol,
 		username:       "",
 		password:       "",
-		host:           "",
-		port:           "",
+		host:           _host,
+		port:           _port,
+		tlsType:        _tlsType,
 		maxConnections: _maxConnections,
 		idleTimeout:    _idleTimeout,
 		waitTimeout:    _waitTimeout,

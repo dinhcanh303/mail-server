@@ -13,6 +13,12 @@ func Port(port string) Option {
 	}
 }
 
+func AuthProtocol(authProtocol string) Option {
+	return func(e *emailSender) {
+		e.authProtocol = authProtocol
+	}
+}
+
 func Username(username string) Option {
 	return func(e *emailSender) {
 		e.username = username
@@ -22,6 +28,18 @@ func Username(username string) Option {
 func Password(password string) Option {
 	return func(e *emailSender) {
 		e.password = password
+	}
+}
+
+func FromName(fromName string) Option {
+	return func(e *emailSender) {
+		e.fromName = fromName
+	}
+}
+
+func FromAddress(fromAddress string) Option {
+	return func(e *emailSender) {
+		e.fromAddress = fromAddress
 	}
 }
 

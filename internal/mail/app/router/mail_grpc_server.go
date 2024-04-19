@@ -71,11 +71,15 @@ func (m *mailGRPCServer) Logout(ctx context.Context, request *v1.LogoutRequest) 
 	return &v1.LogoutResponse{}, nil
 }
 func (m *mailGRPCServer) CreateServer(ctx context.Context, request *v1.CreateServerRequest) (*v1.CreateServerResponse, error) {
-	model := domain.NewServer(request.Server.Name,
+	model := domain.NewServer(
+		request.Server.Name,
 		request.Server.Host,
 		request.Server.Port,
+		request.Server.AuthProtocol,
 		request.Server.Username,
 		request.Server.Password,
+		request.Server.FromName,
+		request.Server.FromAddress,
 		request.Server.TlsType,
 		request.Server.TlsSkipVerify,
 		request.Server.MaxConnections,
@@ -89,6 +93,41 @@ func (m *mailGRPCServer) CreateServer(ctx context.Context, request *v1.CreateSer
 	return &v1.CreateServerResponse{
 		Server: entityServerToProtobuf(result),
 	}, nil
+}
+func (m *mailGRPCServer) DuplicateServer(ctx context.Context, request *v1.DuplicateServerRequest) (*v1.DuplicateServerResponse, error) {
+
+	serverId := request.Server.Id
+	serverName := request.Server.Name
+	if serverId != 0 && serverName != "" {
+		server, err := m.ucServer.GetServer(ctx, serverId)
+		if err != nil {
+			return nil, errors.Wrap(err, "ucClient.DuplicateServer failed , please check client id")
+		}
+		result, err := m.ucServer.CreateServer(ctx, &domain.Server{
+			Name:           serverName,
+			Host:           server.Host,
+			Port:           server.Port,
+			AuthProtocol:   server.AuthProtocol,
+			UserName:       server.UserName,
+			Password:       server.Password,
+			FromName:       server.FromName,
+			FromAddress:    server.FromAddress,
+			TLSType:        server.TLSType,
+			TLSSkipVerify:  server.TLSSkipVerify,
+			MaxConnections: server.MaxConnections,
+			IdleTimeout:    server.IdleTimeout,
+			Retries:        server.Retries,
+			WaitTimeout:    server.WaitTimeout,
+			IsDefault:      server.IsDefault,
+		})
+		if err != nil {
+			return nil, errors.Wrap(err, "ucClient.DuplicateTemplate failed")
+		}
+		return &v1.DuplicateServerResponse{
+			Server: entityServerToProtobuf(result),
+		}, nil
+	}
+	return nil, errors.New("ucTemp.DuplicateTemplate failed,please check id and name")
 }
 func (m *mailGRPCServer) GetServer(ctx context.Context, request *v1.GetServerRequest) (*v1.GetServerResponse, error) {
 	result, err := m.ucServer.GetServer(ctx, request.Id)
@@ -125,8 +164,11 @@ func (m *mailGRPCServer) UpdateServer(ctx context.Context, request *v1.UpdateSer
 		Name:           request.Server.Name,
 		Host:           request.Server.Host,
 		Port:           request.Server.Port,
+		AuthProtocol:   request.Server.AuthProtocol,
 		UserName:       request.Server.Username,
 		Password:       request.Server.Password,
+		FromName:       request.Server.FromName,
+		FromAddress:    request.Server.FromAddress,
 		TLSType:        domain.TLSType(request.Server.TlsType),
 		TLSSkipVerify:  request.Server.TlsSkipVerify,
 		MaxConnections: request.Server.MaxConnections,
@@ -150,6 +192,30 @@ func (m *mailGRPCServer) CreateTemplate(ctx context.Context, request *v1.CreateT
 	return &v1.CreateTemplateResponse{
 		Template: entityTemplateToProtobuf(result),
 	}, nil
+}
+func (m *mailGRPCServer) DuplicateTemplate(ctx context.Context, request *v1.DuplicateTemplateRequest) (*v1.DuplicateTemplateResponse, error) {
+
+	templateId := request.Template.Id
+	templateName := request.Template.Name
+	if templateId != 0 && templateName != "" {
+		template, err := m.ucTemp.GetTemplate(ctx, templateId)
+		if err != nil {
+			return nil, errors.Wrap(err, "ucClient.DuplicateTemplate failed , please check client id")
+		}
+		result, err := m.ucTemp.CreateTemplate(ctx, &domain.Template{
+			Name:      templateName,
+			Status:    template.Html,
+			Html:      template.Html,
+			IsDefault: template.IsDefault,
+		})
+		if err != nil {
+			return nil, errors.Wrap(err, "ucClient.DuplicateTemplate failed")
+		}
+		return &v1.DuplicateTemplateResponse{
+			Template: entityTemplateToProtobuf(result),
+		}, nil
+	}
+	return nil, errors.New("ucTemp.DuplicateTemplate failed,please check id and name")
 }
 func (m *mailGRPCServer) GetTemplate(ctx context.Context, request *v1.GetTemplateRequest) (*v1.GetTemplateResponse, error) {
 	result, err := m.ucTemp.GetTemplate(ctx, request.Id)
@@ -217,6 +283,30 @@ func (m *mailGRPCServer) CreateClient(ctx context.Context, request *v1.CreateCli
 		Client: entityClientToProtobuf(result),
 	}, nil
 }
+func (m *mailGRPCServer) DuplicateClient(ctx context.Context, request *v1.DuplicateClientRequest) (*v1.DuplicateClientResponse, error) {
+
+	clientId := request.Client.Id
+	clientName := request.Client.Name
+	if clientId != 0 && clientName != "" {
+		client, err := m.ucClient.GetClient(ctx, clientId)
+		if err != nil {
+			return nil, errors.Wrap(err, "ucClient.DuplicateClient failed , please check client id")
+		}
+		result, err := m.ucClient.CreateClient(ctx, &domain.Client{
+			Name:       clientName,
+			ServerID:   client.ServerID,
+			TemplateID: client.TemplateID,
+			IsDefault:  client.IsDefault,
+		})
+		if err != nil {
+			return nil, errors.Wrap(err, "ucClient.DuplicateClient failed")
+		}
+		return &v1.DuplicateClientResponse{
+			Client: entityClientToProtobuf(result),
+		}, nil
+	}
+	return nil, errors.New("ucTemp.DuplicateClient failed,please check id and name")
+}
 func (m *mailGRPCServer) GetClient(ctx context.Context, request *v1.GetClientRequest) (*v1.GetClientResponse, error) {
 	result, err := m.ucClient.GetClient(ctx, request.Id)
 	if err != nil {
@@ -282,8 +372,11 @@ func entityServerToProtobuf(entity *domain.Server) *v1.Server {
 		Name:           entity.Name,
 		Host:           entity.Host,
 		Port:           entity.Port,
+		AuthProtocol:   entity.AuthProtocol,
 		Username:       entity.UserName,
 		Password:       entity.Password,
+		FromName:       entity.FromName,
+		FromAddress:    entity.FromAddress,
 		TlsType:        string(entity.TLSType),
 		TlsSkipVerify:  entity.TLSSkipVerify,
 		MaxConnections: entity.MaxConnections,

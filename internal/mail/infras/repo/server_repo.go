@@ -35,11 +35,23 @@ func (s *serverRepo) CreateServer(ctx context.Context, server *domain.Server) (*
 	}
 	qtx := querier.WithTx(tx)
 	result, err := qtx.CreateServer(ctx, postgresql.CreateServerParams{
-		Name:     server.Name,
-		Host:     server.Host,
-		Port:     server.Port,
+		Name: server.Name,
+		Host: server.Host,
+		Port: server.Port,
+		AuthProtocol: sql.NullString{
+			String: server.AuthProtocol,
+			Valid:  server.AuthProtocol != "",
+		},
 		Username: server.UserName,
 		Password: server.Password,
+		FromName: sql.NullString{
+			String: server.FromName,
+			Valid:  server.FromName != "",
+		},
+		FromAddress: sql.NullString{
+			String: server.FromAddress,
+			Valid:  server.FromAddress != "",
+		},
 		TlsType: sql.NullString{
 			String: string(server.TLSType),
 			Valid:  string(server.TLSType) != "",
@@ -137,6 +149,10 @@ func (s *serverRepo) UpdateServer(ctx context.Context, server *domain.Server) (*
 			Int64: server.Port,
 			Valid: server.Port > 0,
 		},
+		AuthProtocol: sql.NullString{
+			String: server.AuthProtocol,
+			Valid:  server.AuthProtocol != "",
+		},
 		Username: sql.NullString{
 			String: server.UserName,
 			Valid:  server.UserName != "",
@@ -144,6 +160,14 @@ func (s *serverRepo) UpdateServer(ctx context.Context, server *domain.Server) (*
 		Password: sql.NullString{
 			String: server.Password,
 			Valid:  server.Password != "",
+		},
+		FromName: sql.NullString{
+			String: server.FromName,
+			Valid:  server.FromName != "",
+		},
+		FromAddress: sql.NullString{
+			String: server.FromAddress,
+			Valid:  server.FromAddress != "",
 		},
 		TlsType: sql.NullString{
 			String: string(server.TLSType),
@@ -181,8 +205,11 @@ func repoServerToDomainServer(result postgresql.MailServer) *domain.Server {
 		Name:           result.Name,
 		Host:           result.Host,
 		Port:           result.Port,
+		AuthProtocol:   result.AuthProtocol.String,
 		UserName:       result.Username,
 		Password:       result.Password,
+		FromName:       result.FromName.String,
+		FromAddress:    result.FromAddress.String,
 		TLSType:        domain.TLSType(result.TlsType.String),
 		TLSSkipVerify:  result.TlsSkipVerify.Bool,
 		MaxConnections: result.MaxConnections.Int64,

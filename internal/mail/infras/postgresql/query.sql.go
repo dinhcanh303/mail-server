@@ -95,23 +95,29 @@ INSERT INTO mail.servers (
     name,
     host,
     port,
+    auth_protocol,
     username,
     password,
+    from_name,
+    from_address,
     tls_type,
     tls_skip_verify,
     max_connections,
     idle_timeout,
     retries,
     wait_timeout
-) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id, name, host, port, username, password, fromname, tls_type, tls_skip_verify, max_connections, idle_timeout, retries, wait_timeout, is_default, created_at, updated_at
+) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id, name, host, port, auth_protocol, username, password, from_name, from_address, tls_type, tls_skip_verify, max_connections, idle_timeout, retries, wait_timeout, is_default, created_at, updated_at
 `
 
 type CreateServerParams struct {
 	Name           string         `json:"name"`
 	Host           string         `json:"host"`
 	Port           int64          `json:"port"`
+	AuthProtocol   sql.NullString `json:"auth_protocol"`
 	Username       string         `json:"username"`
 	Password       string         `json:"password"`
+	FromName       sql.NullString `json:"from_name"`
+	FromAddress    sql.NullString `json:"from_address"`
 	TlsType        sql.NullString `json:"tls_type"`
 	TlsSkipVerify  sql.NullBool   `json:"tls_skip_verify"`
 	MaxConnections sql.NullInt64  `json:"max_connections"`
@@ -125,8 +131,11 @@ func (q *Queries) CreateServer(ctx context.Context, arg CreateServerParams) (Mai
 		arg.Name,
 		arg.Host,
 		arg.Port,
+		arg.AuthProtocol,
 		arg.Username,
 		arg.Password,
+		arg.FromName,
+		arg.FromAddress,
 		arg.TlsType,
 		arg.TlsSkipVerify,
 		arg.MaxConnections,
@@ -140,9 +149,11 @@ func (q *Queries) CreateServer(ctx context.Context, arg CreateServerParams) (Mai
 		&i.Name,
 		&i.Host,
 		&i.Port,
+		&i.AuthProtocol,
 		&i.Username,
 		&i.Password,
-		&i.Fromname,
+		&i.FromName,
+		&i.FromAddress,
 		&i.TlsType,
 		&i.TlsSkipVerify,
 		&i.MaxConnections,
@@ -346,7 +357,7 @@ func (q *Queries) GetHistory(ctx context.Context, id int64) (MailHistory, error)
 }
 
 const getServer = `-- name: GetServer :one
-SELECT id, name, host, port, username, password, fromname, tls_type, tls_skip_verify, max_connections, idle_timeout, retries, wait_timeout, is_default, created_at, updated_at FROM mail.servers WHERE id = $1
+SELECT id, name, host, port, auth_protocol, username, password, from_name, from_address, tls_type, tls_skip_verify, max_connections, idle_timeout, retries, wait_timeout, is_default, created_at, updated_at FROM mail.servers WHERE id = $1
 `
 
 func (q *Queries) GetServer(ctx context.Context, id int64) (MailServer, error) {
@@ -357,9 +368,11 @@ func (q *Queries) GetServer(ctx context.Context, id int64) (MailServer, error) {
 		&i.Name,
 		&i.Host,
 		&i.Port,
+		&i.AuthProtocol,
 		&i.Username,
 		&i.Password,
-		&i.Fromname,
+		&i.FromName,
+		&i.FromAddress,
 		&i.TlsType,
 		&i.TlsSkipVerify,
 		&i.MaxConnections,
@@ -374,7 +387,7 @@ func (q *Queries) GetServer(ctx context.Context, id int64) (MailServer, error) {
 }
 
 const getServers = `-- name: GetServers :many
-SELECT id, name, host, port, username, password, fromname, tls_type, tls_skip_verify, max_connections, idle_timeout, retries, wait_timeout, is_default, created_at, updated_at FROM mail.servers LIMIT $1 OFFSET $2
+SELECT id, name, host, port, auth_protocol, username, password, from_name, from_address, tls_type, tls_skip_verify, max_connections, idle_timeout, retries, wait_timeout, is_default, created_at, updated_at FROM mail.servers LIMIT $1 OFFSET $2
 `
 
 type GetServersParams struct {
@@ -396,9 +409,11 @@ func (q *Queries) GetServers(ctx context.Context, arg GetServersParams) ([]MailS
 			&i.Name,
 			&i.Host,
 			&i.Port,
+			&i.AuthProtocol,
 			&i.Username,
 			&i.Password,
-			&i.Fromname,
+			&i.FromName,
+			&i.FromAddress,
 			&i.TlsType,
 			&i.TlsSkipVerify,
 			&i.MaxConnections,
@@ -606,23 +621,29 @@ UPDATE mail.servers SET
     name = COALESCE($1,name),
     host = COALESCE($2,host),
     port = COALESCE($3,port),
-    username = COALESCE($4,username),
-    password = COALESCE($5,password),
-    tls_type = COALESCE($6,tls_type),
-    tls_skip_verify = COALESCE($7,tls_skip_verify),
-    max_connections = COALESCE($8,max_connections),
-    idle_timeout = COALESCE($9,idle_timeout),
-    retries = COALESCE($10,retries),
-    wait_timeout = COALESCE($11,wait_timeout)
-WHERE id = $12 RETURNING id, name, host, port, username, password, fromname, tls_type, tls_skip_verify, max_connections, idle_timeout, retries, wait_timeout, is_default, created_at, updated_at
+    auth_protocol = COALESCE($4,auth_protocol),
+    username = COALESCE($5,username),
+    password = COALESCE($6,password),
+    from_name = COALESCE($7,from_name),
+    from_address = COALESCE($8,from_address),
+    tls_type = COALESCE($9,tls_type),
+    tls_skip_verify = COALESCE($10,tls_skip_verify),
+    max_connections = COALESCE($11,max_connections),
+    idle_timeout = COALESCE($12,idle_timeout),
+    retries = COALESCE($13,retries),
+    wait_timeout = COALESCE($14,wait_timeout)
+WHERE id = $15 RETURNING id, name, host, port, auth_protocol, username, password, from_name, from_address, tls_type, tls_skip_verify, max_connections, idle_timeout, retries, wait_timeout, is_default, created_at, updated_at
 `
 
 type UpdateServerParams struct {
 	Name           sql.NullString `json:"name"`
 	Host           sql.NullString `json:"host"`
 	Port           sql.NullInt64  `json:"port"`
+	AuthProtocol   sql.NullString `json:"auth_protocol"`
 	Username       sql.NullString `json:"username"`
 	Password       sql.NullString `json:"password"`
+	FromName       sql.NullString `json:"from_name"`
+	FromAddress    sql.NullString `json:"from_address"`
 	TlsType        sql.NullString `json:"tls_type"`
 	TlsSkipVerify  sql.NullBool   `json:"tls_skip_verify"`
 	MaxConnections sql.NullInt64  `json:"max_connections"`
@@ -637,8 +658,11 @@ func (q *Queries) UpdateServer(ctx context.Context, arg UpdateServerParams) (Mai
 		arg.Name,
 		arg.Host,
 		arg.Port,
+		arg.AuthProtocol,
 		arg.Username,
 		arg.Password,
+		arg.FromName,
+		arg.FromAddress,
 		arg.TlsType,
 		arg.TlsSkipVerify,
 		arg.MaxConnections,
@@ -653,9 +677,11 @@ func (q *Queries) UpdateServer(ctx context.Context, arg UpdateServerParams) (Mai
 		&i.Name,
 		&i.Host,
 		&i.Port,
+		&i.AuthProtocol,
 		&i.Username,
 		&i.Password,
-		&i.Fromname,
+		&i.FromName,
+		&i.FromAddress,
 		&i.TlsType,
 		&i.TlsSkipVerify,
 		&i.MaxConnections,

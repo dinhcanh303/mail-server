@@ -31,7 +31,7 @@ func (c *clientRepo) CreateClient(ctx context.Context, client *domain.Client) (*
 	querier := postgresql.New(db)
 	tx, err := db.Begin()
 	if err != nil {
-		return nil, errors.Wrap(err, "serverRepo.CreateServer db failed")
+		return nil, errors.Wrap(err, "serverRepo.CreateClient db failed")
 	}
 	qtx := querier.WithTx(tx)
 	result, err := qtx.CreateClient(ctx, postgresql.CreateClientParams{

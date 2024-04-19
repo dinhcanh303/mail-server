@@ -15,8 +15,11 @@ type Server struct {
 	Name           string    `json:"name"`
 	Host           string    `json:"host"`
 	Port           int64     `json:"port"`
+	AuthProtocol   string    `json:"auth_protocol"`
 	UserName       string    `json:"username"`
 	Password       string    `json:"password"`
+	FromName       string    `json:"from_name"`
+	FromAddress    string    `json:"from_address"`
 	TLSType        TLSType   `json:"tls_type"`
 	TLSSkipVerify  bool      `json:"skip_tls_verify"`
 	MaxConnections int64     `json:"max_connections"`
@@ -28,11 +31,20 @@ type Server struct {
 	UpdatedAt      time.Time `json:"updated_at"`
 }
 
-func NewServer(name string, host string, port int64, username string, password string, tlsType string, tlsSkipVerify bool,
+func NewServer(name string, host string, port int64, authProtocol, username, password, fromName, fromAddress, tlsType string, tlsSkipVerify bool,
 	maxConnections int64, retries int64, idleTimeout int64, waitTimeout int64,
 ) *Server {
 	if tlsType == "" {
 		tlsType = "TLS"
+	}
+	if authProtocol == "" {
+		authProtocol = "plain"
+	}
+	if fromName == "" {
+		fromName = "email"
+	}
+	if fromAddress == "" {
+		fromAddress = "noreply@server.yoursite.com"
 	}
 	if maxConnections == 0 {
 		maxConnections = 10

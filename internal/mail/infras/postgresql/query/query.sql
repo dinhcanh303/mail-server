@@ -3,15 +3,18 @@ INSERT INTO mail.servers (
     name,
     host,
     port,
+    auth_protocol,
     username,
     password,
+    from_name,
+    from_address,
     tls_type,
     tls_skip_verify,
     max_connections,
     idle_timeout,
     retries,
     wait_timeout
-) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *;
+) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *;
 
 -- name: GetServer :one
 SELECT * FROM mail.servers WHERE id = $1;
@@ -24,8 +27,11 @@ UPDATE mail.servers SET
     name = COALESCE(sqlc.narg(name),name),
     host = COALESCE(sqlc.narg(host),host),
     port = COALESCE(sqlc.narg(port),port),
+    auth_protocol = COALESCE(sqlc.narg(auth_protocol),auth_protocol),
     username = COALESCE(sqlc.narg(username),username),
     password = COALESCE(sqlc.narg(password),password),
+    from_name = COALESCE(sqlc.narg(from_name),from_name),
+    from_address = COALESCE(sqlc.narg(from_address),from_address),
     tls_type = COALESCE(sqlc.narg(tls_type),tls_type),
     tls_skip_verify = COALESCE(sqlc.narg(tls_skip_verify),tls_skip_verify),
     max_connections = COALESCE(sqlc.narg(max_connections),max_connections),

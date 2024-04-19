@@ -28,9 +28,11 @@ CREATE TABLE
         name VARCHAR(255) NOT NULL,
         host VARCHAR(255) NOT NULL,
         port BIGINT NOT NULL,
+        auth_protocol VARCHAR(255) DEFAULT 'plain',
         username VARCHAR(255) NOT NULL,
         password VARCHAR(255) NOT NULL,
-        fromName VARCHAR(255) NOT NULL,
+        from_name VARCHAR(255) DEFAULT 'mail',
+        from_address VARCHAR(255) DEFAULT 'noreply@server.yoursite.com',
         tls_type VARCHAR(255) DEFAULT 'TLS',
         tls_skip_verify BOOLEAN DEFAULT false,
         max_connections BIGINT DEFAULT 10,
@@ -172,7 +174,6 @@ INSERT INTO mail.servers
     port,
     username,
     password,
-    fromName,
     tls_type,
     tls_skip_verify,
     max_connections,
@@ -180,7 +181,7 @@ INSERT INTO mail.servers
     retries,
     wait_timeout,
     is_default
-) VALUES (1,'default','smtp.yoursite.com','465','username','password','test@mail.com','TLS',false,10,15,5,10,true);
+) VALUES (1,'default','smtp.yoursite.com','465','username','password','TLS',false,10,15,5,10,true);
 INSERT INTO mail.clients 
 (
     id,

@@ -22,17 +22,20 @@ const (
 	MailService_SignIn_FullMethodName             = "/mail.v1.MailService/SignIn"
 	MailService_Logout_FullMethodName             = "/mail.v1.MailService/Logout"
 	MailService_CreateServer_FullMethodName       = "/mail.v1.MailService/CreateServer"
+	MailService_DuplicateServer_FullMethodName    = "/mail.v1.MailService/DuplicateServer"
 	MailService_UpdateServer_FullMethodName       = "/mail.v1.MailService/UpdateServer"
 	MailService_GetServer_FullMethodName          = "/mail.v1.MailService/GetServer"
 	MailService_GetServers_FullMethodName         = "/mail.v1.MailService/GetServers"
 	MailService_DeleteServer_FullMethodName       = "/mail.v1.MailService/DeleteServer"
 	MailService_CreateTemplate_FullMethodName     = "/mail.v1.MailService/CreateTemplate"
+	MailService_DuplicateTemplate_FullMethodName  = "/mail.v1.MailService/DuplicateTemplate"
 	MailService_UpdateTemplate_FullMethodName     = "/mail.v1.MailService/UpdateTemplate"
 	MailService_GetTemplate_FullMethodName        = "/mail.v1.MailService/GetTemplate"
 	MailService_GetTemplates_FullMethodName       = "/mail.v1.MailService/GetTemplates"
 	MailService_GetTemplatesActive_FullMethodName = "/mail.v1.MailService/GetTemplatesActive"
 	MailService_DeleteTemplate_FullMethodName     = "/mail.v1.MailService/DeleteTemplate"
 	MailService_CreateClient_FullMethodName       = "/mail.v1.MailService/CreateClient"
+	MailService_DuplicateClient_FullMethodName    = "/mail.v1.MailService/DuplicateClient"
 	MailService_UpdateClient_FullMethodName       = "/mail.v1.MailService/UpdateClient"
 	MailService_GetClient_FullMethodName          = "/mail.v1.MailService/GetClient"
 	MailService_GetClients_FullMethodName         = "/mail.v1.MailService/GetClients"
@@ -48,17 +51,20 @@ type MailServiceClient interface {
 	SignIn(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
 	CreateServer(ctx context.Context, in *CreateServerRequest, opts ...grpc.CallOption) (*CreateServerResponse, error)
+	DuplicateServer(ctx context.Context, in *DuplicateServerRequest, opts ...grpc.CallOption) (*DuplicateServerResponse, error)
 	UpdateServer(ctx context.Context, in *UpdateServerRequest, opts ...grpc.CallOption) (*UpdateServerResponse, error)
 	GetServer(ctx context.Context, in *GetServerRequest, opts ...grpc.CallOption) (*GetServerResponse, error)
 	GetServers(ctx context.Context, in *GetServersRequest, opts ...grpc.CallOption) (*GetServersResponse, error)
 	DeleteServer(ctx context.Context, in *DeleteServerRequest, opts ...grpc.CallOption) (*DeleteServerResponse, error)
 	CreateTemplate(ctx context.Context, in *CreateTemplateRequest, opts ...grpc.CallOption) (*CreateTemplateResponse, error)
+	DuplicateTemplate(ctx context.Context, in *DuplicateTemplateRequest, opts ...grpc.CallOption) (*DuplicateTemplateResponse, error)
 	UpdateTemplate(ctx context.Context, in *UpdateTemplateRequest, opts ...grpc.CallOption) (*UpdateTemplateResponse, error)
 	GetTemplate(ctx context.Context, in *GetTemplateRequest, opts ...grpc.CallOption) (*GetTemplateResponse, error)
 	GetTemplates(ctx context.Context, in *GetTemplatesRequest, opts ...grpc.CallOption) (*GetTemplatesResponse, error)
 	GetTemplatesActive(ctx context.Context, in *GetTemplatesActiveRequest, opts ...grpc.CallOption) (*GetTemplatesActiveResponse, error)
 	DeleteTemplate(ctx context.Context, in *DeleteTemplateRequest, opts ...grpc.CallOption) (*DeleteTemplateResponse, error)
 	CreateClient(ctx context.Context, in *CreateClientRequest, opts ...grpc.CallOption) (*CreateClientResponse, error)
+	DuplicateClient(ctx context.Context, in *DuplicateClientRequest, opts ...grpc.CallOption) (*DuplicateClientResponse, error)
 	UpdateClient(ctx context.Context, in *UpdateClientRequest, opts ...grpc.CallOption) (*UpdateClientResponse, error)
 	GetClient(ctx context.Context, in *GetClientRequest, opts ...grpc.CallOption) (*GetClientResponse, error)
 	GetClients(ctx context.Context, in *GetClientsRequest, opts ...grpc.CallOption) (*GetClientsResponse, error)
@@ -96,6 +102,15 @@ func (c *mailServiceClient) Logout(ctx context.Context, in *LogoutRequest, opts 
 func (c *mailServiceClient) CreateServer(ctx context.Context, in *CreateServerRequest, opts ...grpc.CallOption) (*CreateServerResponse, error) {
 	out := new(CreateServerResponse)
 	err := c.cc.Invoke(ctx, MailService_CreateServer_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mailServiceClient) DuplicateServer(ctx context.Context, in *DuplicateServerRequest, opts ...grpc.CallOption) (*DuplicateServerResponse, error) {
+	out := new(DuplicateServerResponse)
+	err := c.cc.Invoke(ctx, MailService_DuplicateServer_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -141,6 +156,15 @@ func (c *mailServiceClient) DeleteServer(ctx context.Context, in *DeleteServerRe
 func (c *mailServiceClient) CreateTemplate(ctx context.Context, in *CreateTemplateRequest, opts ...grpc.CallOption) (*CreateTemplateResponse, error) {
 	out := new(CreateTemplateResponse)
 	err := c.cc.Invoke(ctx, MailService_CreateTemplate_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mailServiceClient) DuplicateTemplate(ctx context.Context, in *DuplicateTemplateRequest, opts ...grpc.CallOption) (*DuplicateTemplateResponse, error) {
+	out := new(DuplicateTemplateResponse)
+	err := c.cc.Invoke(ctx, MailService_DuplicateTemplate_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -195,6 +219,15 @@ func (c *mailServiceClient) DeleteTemplate(ctx context.Context, in *DeleteTempla
 func (c *mailServiceClient) CreateClient(ctx context.Context, in *CreateClientRequest, opts ...grpc.CallOption) (*CreateClientResponse, error) {
 	out := new(CreateClientResponse)
 	err := c.cc.Invoke(ctx, MailService_CreateClient_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mailServiceClient) DuplicateClient(ctx context.Context, in *DuplicateClientRequest, opts ...grpc.CallOption) (*DuplicateClientResponse, error) {
+	out := new(DuplicateClientResponse)
+	err := c.cc.Invoke(ctx, MailService_DuplicateClient_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -262,17 +295,20 @@ type MailServiceServer interface {
 	SignIn(context.Context, *LoginRequest) (*LoginResponse, error)
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	CreateServer(context.Context, *CreateServerRequest) (*CreateServerResponse, error)
+	DuplicateServer(context.Context, *DuplicateServerRequest) (*DuplicateServerResponse, error)
 	UpdateServer(context.Context, *UpdateServerRequest) (*UpdateServerResponse, error)
 	GetServer(context.Context, *GetServerRequest) (*GetServerResponse, error)
 	GetServers(context.Context, *GetServersRequest) (*GetServersResponse, error)
 	DeleteServer(context.Context, *DeleteServerRequest) (*DeleteServerResponse, error)
 	CreateTemplate(context.Context, *CreateTemplateRequest) (*CreateTemplateResponse, error)
+	DuplicateTemplate(context.Context, *DuplicateTemplateRequest) (*DuplicateTemplateResponse, error)
 	UpdateTemplate(context.Context, *UpdateTemplateRequest) (*UpdateTemplateResponse, error)
 	GetTemplate(context.Context, *GetTemplateRequest) (*GetTemplateResponse, error)
 	GetTemplates(context.Context, *GetTemplatesRequest) (*GetTemplatesResponse, error)
 	GetTemplatesActive(context.Context, *GetTemplatesActiveRequest) (*GetTemplatesActiveResponse, error)
 	DeleteTemplate(context.Context, *DeleteTemplateRequest) (*DeleteTemplateResponse, error)
 	CreateClient(context.Context, *CreateClientRequest) (*CreateClientResponse, error)
+	DuplicateClient(context.Context, *DuplicateClientRequest) (*DuplicateClientResponse, error)
 	UpdateClient(context.Context, *UpdateClientRequest) (*UpdateClientResponse, error)
 	GetClient(context.Context, *GetClientRequest) (*GetClientResponse, error)
 	GetClients(context.Context, *GetClientsRequest) (*GetClientsResponse, error)
@@ -295,6 +331,9 @@ func (UnimplementedMailServiceServer) Logout(context.Context, *LogoutRequest) (*
 func (UnimplementedMailServiceServer) CreateServer(context.Context, *CreateServerRequest) (*CreateServerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateServer not implemented")
 }
+func (UnimplementedMailServiceServer) DuplicateServer(context.Context, *DuplicateServerRequest) (*DuplicateServerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DuplicateServer not implemented")
+}
 func (UnimplementedMailServiceServer) UpdateServer(context.Context, *UpdateServerRequest) (*UpdateServerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateServer not implemented")
 }
@@ -309,6 +348,9 @@ func (UnimplementedMailServiceServer) DeleteServer(context.Context, *DeleteServe
 }
 func (UnimplementedMailServiceServer) CreateTemplate(context.Context, *CreateTemplateRequest) (*CreateTemplateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateTemplate not implemented")
+}
+func (UnimplementedMailServiceServer) DuplicateTemplate(context.Context, *DuplicateTemplateRequest) (*DuplicateTemplateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DuplicateTemplate not implemented")
 }
 func (UnimplementedMailServiceServer) UpdateTemplate(context.Context, *UpdateTemplateRequest) (*UpdateTemplateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateTemplate not implemented")
@@ -327,6 +369,9 @@ func (UnimplementedMailServiceServer) DeleteTemplate(context.Context, *DeleteTem
 }
 func (UnimplementedMailServiceServer) CreateClient(context.Context, *CreateClientRequest) (*CreateClientResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateClient not implemented")
+}
+func (UnimplementedMailServiceServer) DuplicateClient(context.Context, *DuplicateClientRequest) (*DuplicateClientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DuplicateClient not implemented")
 }
 func (UnimplementedMailServiceServer) UpdateClient(context.Context, *UpdateClientRequest) (*UpdateClientResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateClient not implemented")
@@ -409,6 +454,24 @@ func _MailService_CreateServer_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MailServiceServer).CreateServer(ctx, req.(*CreateServerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MailService_DuplicateServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DuplicateServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MailServiceServer).DuplicateServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MailService_DuplicateServer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MailServiceServer).DuplicateServer(ctx, req.(*DuplicateServerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -499,6 +562,24 @@ func _MailService_CreateTemplate_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MailServiceServer).CreateTemplate(ctx, req.(*CreateTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MailService_DuplicateTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DuplicateTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MailServiceServer).DuplicateTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MailService_DuplicateTemplate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MailServiceServer).DuplicateTemplate(ctx, req.(*DuplicateTemplateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -607,6 +688,24 @@ func _MailService_CreateClient_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MailServiceServer).CreateClient(ctx, req.(*CreateClientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MailService_DuplicateClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DuplicateClientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MailServiceServer).DuplicateClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MailService_DuplicateClient_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MailServiceServer).DuplicateClient(ctx, req.(*DuplicateClientRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -739,6 +838,10 @@ var MailService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _MailService_CreateServer_Handler,
 		},
 		{
+			MethodName: "DuplicateServer",
+			Handler:    _MailService_DuplicateServer_Handler,
+		},
+		{
 			MethodName: "UpdateServer",
 			Handler:    _MailService_UpdateServer_Handler,
 		},
@@ -757,6 +860,10 @@ var MailService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateTemplate",
 			Handler:    _MailService_CreateTemplate_Handler,
+		},
+		{
+			MethodName: "DuplicateTemplate",
+			Handler:    _MailService_DuplicateTemplate_Handler,
 		},
 		{
 			MethodName: "UpdateTemplate",
@@ -781,6 +888,10 @@ var MailService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateClient",
 			Handler:    _MailService_CreateClient_Handler,
+		},
+		{
+			MethodName: "DuplicateClient",
+			Handler:    _MailService_DuplicateClient_Handler,
 		},
 		{
 			MethodName: "UpdateClient",

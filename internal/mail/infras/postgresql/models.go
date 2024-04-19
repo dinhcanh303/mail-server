@@ -38,9 +38,11 @@ type MailServer struct {
 	Name           string         `json:"name"`
 	Host           string         `json:"host"`
 	Port           int64          `json:"port"`
+	AuthProtocol   sql.NullString `json:"auth_protocol"`
 	Username       string         `json:"username"`
 	Password       string         `json:"password"`
-	Fromname       string         `json:"fromname"`
+	FromName       sql.NullString `json:"from_name"`
+	FromAddress    sql.NullString `json:"from_address"`
 	TlsType        sql.NullString `json:"tls_type"`
 	TlsSkipVerify  sql.NullBool   `json:"tls_skip_verify"`
 	MaxConnections sql.NullInt64  `json:"max_connections"`

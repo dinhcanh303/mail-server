@@ -39,6 +39,16 @@ service MailService {
             description: ""
         };
     }
+    rpc DuplicateServer(DuplicateServerRequest) returns (DuplicateServerResponse){
+        option (google.api.http) = {
+            post: "/api/v1/servers/{server.id}/duplicate",
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Duplicate server mail service"
+            description: ""
+        };
+    }
     rpc UpdateServer(UpdateServerRequest) returns (UpdateServerResponse){
         option (google.api.http) = {
             put: "/api/v1/servers/{server.id}",
@@ -83,6 +93,16 @@ service MailService {
         };
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
             summary: "Create template mail service"
+            description: ""
+        };
+    }
+    rpc DuplicateTemplate(DuplicateTemplateRequest) returns (DuplicateTemplateResponse){
+        option (google.api.http) = {
+            post: "/api/v1/templates/{template.id}/duplicate",
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Duplicate template mail service"
             description: ""
         };
     }
@@ -139,6 +159,16 @@ service MailService {
         };
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
             summary: "Create client mail service"
+            description: ""
+        };
+    }
+    rpc DuplicateClient(DuplicateClientRequest) returns (DuplicateClientResponse){
+        option (google.api.http) = {
+            post: "/api/v1/clients/{client.id}/duplicate",
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Duplicate client mail service"
             description: ""
         };
     }
@@ -225,6 +255,12 @@ message SendMailRequest {
     google.protobuf.Any content = 7;
 }
 message SendMailResponse{}
+message DuplicateClientRequest {
+    Client client = 1;
+}
+message DuplicateClientResponse {
+    Client client = 1;
+}
 message CreateClientRequest {
     Client client = 1;
 }
@@ -268,6 +304,12 @@ message CreateTemplateRequest{
     Template template = 1;
 }
 message CreateTemplateResponse{
+    Template template = 1;
+}
+message DuplicateTemplateRequest{
+    Template template = 1;
+}
+message DuplicateTemplateResponse{
     Template template = 1;
 }
 message UpdateTemplateRequest{
@@ -329,6 +371,12 @@ message CreateServerRequest{
 message CreateServerResponse{
     Server server = 1;
 }
+message DuplicateServerRequest {
+    Server server = 1;
+}
+message DuplicateServerResponse {
+    Server server = 1;
+}
 message UpdateServerRequest{
     Server server = 1;
 }
@@ -340,17 +388,20 @@ message Server {
     string name = 2;
     string host = 3;
     int64 port = 4;
-    string username = 5;
-    string password = 6;
-    string tls_type = 7;
-    bool tls_skip_verify = 8;
-    int64 max_connections = 9;
-    int64 idle_timeout = 10;
-    int64 retries = 11;
-    int64 wait_timeout = 12;
-    bool is_default = 13;
-    google.protobuf.Timestamp created_at = 14;
-    google.protobuf.Timestamp updated_at = 15;
+    string auth_protocol = 5;
+    string username = 6;
+    string password = 7;
+    string from_name = 8;
+    string from_address = 9;
+    string tls_type = 10;
+    bool tls_skip_verify = 11;
+    int64 max_connections = 12;
+    int64 idle_timeout = 13;
+    int64 retries = 14;
+    int64 wait_timeout = 15;
+    bool is_default = 16;
+    google.protobuf.Timestamp created_at = 17;
+    google.protobuf.Timestamp updated_at = 18;
 }
 message LogoutRequest{}
 message LogoutResponse{}
