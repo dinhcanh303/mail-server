@@ -96,7 +96,9 @@ const Template: React.FC<TemplateProps> = ({}) => {
   const handleCreateTemplate = async () => {
     if (template.name.trim()) {
       try {
-        const res = await createTemplate(template)
+        const res = await createTemplate({
+          template: template
+        })
         if (res?.status == 200) {
           toast?.current?.show({ severity: 'success', summary: 'Success', detail: 'Template Created Successfully' })
           queryClient.invalidateQueries({ queryKey: [`templates`], exact: true })

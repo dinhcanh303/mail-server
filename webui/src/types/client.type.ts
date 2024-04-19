@@ -1,14 +1,13 @@
 import { Client } from '@/models/Client'
 
 export interface CreateClientRequest {
-  name: string
-  html: string
-}
-export interface UpdateClientRequest {
   client: Client
 }
-export type CreateClientResponse = Client
-export type UpdateClientResponse = Client
+export type UpdateClientRequest = CreateClientRequest
+export type DuplicateClientRequest = CreateClientRequest
+export type CreateClientResponse = CreateClientRequest
+export type UpdateClientResponse = CreateClientRequest
+export type DuplicateClientResponse = CreateClientRequest
 export interface GetClientsResponse {
   clients: Client[]
 }

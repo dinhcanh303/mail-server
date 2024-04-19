@@ -1,13 +1,11 @@
 import { Server } from '@/models/Server'
 
 export interface CreateServerRequest {
-  name: string
-  host: string
-  port: number | string
-  username: string
-  password: string
+  server: Server
 }
-export type CreateServerResponse = Server
+export type CreateServerResponse = CreateServerRequest
+export type DuplicateServerRequest = CreateServerRequest
+export type DuplicateServerResponse = CreateServerRequest
 export interface GetServersResponse {
   servers: Server[]
 }

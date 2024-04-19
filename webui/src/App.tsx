@@ -1,15 +1,15 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
-import { Toaster } from 'react-hot-toast'
 
 import SignIn from '@/pages/auth/SignIn'
 import Loader from '@/components/loader/Loader'
 import routes from '@/routes'
-import AuthGuard from './guards/AuthGuard'
+import { Toast } from 'primereact/toast'
 
 const DefaultLayout = lazy(() => import('./layout/DefaultLayout'))
 
 function App() {
+  const appToast = useRef(null)
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
@@ -19,7 +19,7 @@ function App() {
     <Loader />
   ) : (
     <>
-      <Toaster position='top-right' reverseOrder={false} containerClassName='overflow-auto' />
+      <Toast ref={appToast} />
       <Routes>
         <Route path='/login' element={<SignIn />} />
         <Route element={<DefaultLayout />}>

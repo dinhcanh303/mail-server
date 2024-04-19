@@ -1,6 +1,6 @@
-import { createClient, deleteClient, getClients, updateClient } from '@/apis/client.api'
+import { createClient, deleteClient, duplicateClient, getClients, updateClient } from '@/apis/client.api'
 import { getServers } from '@/apis/server.api'
-import { getTemplates, getTemplatesActive } from '@/apis/template.api'
+import { getTemplatesActive } from '@/apis/template.api'
 import { Client as ModelClient } from '@/models/Client'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { BreadCrumb } from 'primereact/breadcrumb'
@@ -10,7 +10,6 @@ import { DataTable } from 'primereact/datatable'
 import { Dialog } from 'primereact/dialog'
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown'
 import { InputText } from 'primereact/inputtext'
-import { InputTextarea } from 'primereact/inputtextarea'
 import { Tag } from 'primereact/tag'
 import { Toast } from 'primereact/toast'
 import { Toolbar } from 'primereact/toolbar'
@@ -32,6 +31,7 @@ const Client: React.FC<ClientProps> = ({}) => {
   }
   const [clients, setClients] = useState<ModelClient[] | null>(null)
   const [clientDialog, setClientDialog] = useState(false)
+  const [dupClientDialog, setDupClientDialog] = useState(false)
   const [deleteClientDialog, setDeleteClientDialog] = useState(false)
   const [deleteClientsDialog, setDeleteClientsDialog] = useState(false)
   const [client, setClient] = useState<ModelClient>(emptyClient)
@@ -40,10 +40,6 @@ const Client: React.FC<ClientProps> = ({}) => {
   const [globalFilter, setGlobalFilter] = useState(null)
   const toast = useRef(null)
   const dt = useRef(null)
-  const statues = [
-    { name: 'Active', value: 'active' },
-    { name: 'Inactive', value: 'inactive' }
-  ]
   const queryClient = useQueryClient()
   const clientRes = useQuery({
     queryKey: ['clients'],
@@ -84,6 +80,9 @@ const Client: React.FC<ClientProps> = ({}) => {
   const hideDeleteClientsDialog = () => {
     setDeleteClientsDialog(false)
   }
+  const hideDuplicateClientDialog = () => {
+    setDupClientDialog(false)
+  }
   const handleDeleteClient = async () => {
     if (client.id) {
       try {
@@ -107,7 +106,9 @@ const Client: React.FC<ClientProps> = ({}) => {
   const handleCreateClient = async () => {
     if (client.name.trim()) {
       try {
-        const res = await createClient(client)
+        const res = await createClient({
+          client: client
+        })
         if (res?.status == 200) {
           toast?.current?.show({ severity: 'success', summary: 'Success', detail: 'Client Created Successfully' })
           queryClient.invalidateQueries({ queryKey: [`Clients`], exact: true })
@@ -127,10 +128,25 @@ const Client: React.FC<ClientProps> = ({}) => {
       })
       if (res?.status == 200) {
         toast?.current?.show({ severity: 'success', summary: 'Success', detail: 'Client Updated Successfully' })
-        queryClient.invalidateQueries({ queryKey: [`Clients`], exact: true })
+        queryClient.invalidateQueries({ queryKey: [`clients`], exact: true })
         setClientDialog(false)
         setClient(emptyClient)
       } else toast?.current?.show({ severity: 'warning', summary: 'Warning', detail: 'Client Updated Failed' })
+    } catch (error) {
+      toast?.current?.show({ severity: 'error', summary: 'Failed', detail: 'Client Updated Failed', life: 3000 })
+    }
+  }
+  const handleDuplicateClient = async () => {
+    try {
+      const res = await duplicateClient({
+        client: client
+      })
+      if (res?.status == 200) {
+        toast?.current?.show({ severity: 'success', summary: 'Success', detail: 'Client Duplicated Successfully' })
+        queryClient.invalidateQueries({ queryKey: [`clients`], exact: true })
+        setDupClientDialog(false)
+        setClient(emptyClient)
+      } else toast?.current?.show({ severity: 'warning', summary: 'Warning', detail: 'Client Duplicated Failed' })
     } catch (error) {
       toast?.current?.show({ severity: 'error', summary: 'Failed', detail: 'Client Updated Failed', life: 3000 })
     }
@@ -139,6 +155,11 @@ const Client: React.FC<ClientProps> = ({}) => {
   const editClient = (client: ModelClient) => {
     setClient({ ...client })
     setClientDialog(true)
+  }
+  const cloneClient = (client: ModelClient) => {
+    client.name = 'Copy of ' + client.name
+    setClient({ ...client })
+    setDupClientDialog(true)
   }
   const confirmDeleteClient = (rowData: ModelClient) => {
     setClient(rowData)
@@ -201,6 +222,11 @@ const Client: React.FC<ClientProps> = ({}) => {
       {/* <Button label='Yes' icon='pi pi-check' severity='danger' onClick={deleteSelectedProducts} /> */}
     </>
   )
+  const duplicateClientDialogFooter = (
+    <>
+      <Button label='Clone' icon='pi pi-check' onClick={handleDuplicateClient} />
+    </>
+  )
   const isDefaultBodyClient = (rowData: ModelClient) => {
     switch (rowData.isDefault) {
       case true:
@@ -213,6 +239,7 @@ const Client: React.FC<ClientProps> = ({}) => {
     return (
       <div>
         <Button icon='pi pi-user-edit' size='small' rounded outlined text onClick={() => editClient(rowData)} />
+        <Button icon='pi pi-clone' size='small' rounded outlined text onClick={() => cloneClient(rowData)} />
         <Button
           icon='pi pi-trash'
           size='small'
@@ -282,7 +309,7 @@ const Client: React.FC<ClientProps> = ({}) => {
               </label>
               <InputText
                 id='name'
-                value={Client.name}
+                value={client.name}
                 onChange={(e) => onInputChange(e, 'name')}
                 required
                 autoFocus
@@ -352,6 +379,30 @@ const Client: React.FC<ClientProps> = ({}) => {
           <div className='confirmation-content'>
             <i className='pi pi-exclamation-triangle mr-3' style={{ fontSize: '2rem' }} />
             {client && <span>Are you sure you want to delete the selected products?</span>}
+          </div>
+        </Dialog>
+        <Dialog
+          visible={dupClientDialog}
+          style={{ width: '32rem' }}
+          breakpoints={{ '960px': '75vw', '641px': '90vw' }}
+          header='Clone Client'
+          modal
+          footer={duplicateClientDialogFooter}
+          onHide={hideDuplicateClientDialog}
+        >
+          <div className='flex justify-between items-center'>
+            <label htmlFor='name' className='font-bold'>
+              Name
+            </label>
+            <InputText
+              id='name'
+              value={client.name}
+              onChange={(e) => onInputChange(e, 'name')}
+              required
+              autoFocus
+              className={classNames({ 'p-invalid': submitted && !client.name })}
+            />
+            {submitted && !client.name && <small className='p-error'>Name is required.</small>}
           </div>
         </Dialog>
       </div>

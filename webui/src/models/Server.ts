@@ -3,8 +3,11 @@ export interface Server {
   name: string
   host: string
   port: string
+  authProtocol: string
   username: string
   password: string
+  fromName: string
+  fromAddress: string
   tlsType: string
   tlsSkipVerify: boolean
   maxConnections: number

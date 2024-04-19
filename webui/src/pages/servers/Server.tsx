@@ -1,6 +1,6 @@
-import { createServer, getServers } from '@/apis/server.api'
+import { createServer, duplicateServer, getServers } from '@/apis/server.api'
 import { Server as ModelServer } from '@/models/Server'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { BreadCrumb } from 'primereact/breadcrumb'
 import { Button } from 'primereact/button'
 import { Column } from 'primereact/column'
@@ -15,6 +15,7 @@ import { Toast } from 'primereact/toast'
 import { Toolbar } from 'primereact/toolbar'
 import { classNames } from 'primereact/utils'
 import React, { useEffect, useRef, useState } from 'react'
+import { FloatLabel } from 'primereact/floatlabel'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface ServerProps {}
@@ -28,8 +29,11 @@ const Server: React.FC<ServerProps> = ({}) => {
     name: '',
     host: 'smtp.yoursite.com',
     port: '465',
+    authProtocol: 'plain',
     username: 'username',
     password: 'password',
+    fromName: 'email',
+    fromAddress: 'noreply@server.yoursite.com',
     tlsType: 'TLS',
     tlsSkipVerify: false,
     maxConnections: 10,
@@ -38,7 +42,10 @@ const Server: React.FC<ServerProps> = ({}) => {
     waitTimeout: 10
   }
   const [servers, setServers] = useState(null)
+  const [toEmail, setToEmail] = useState<string>('')
   const [serverDialog, setServerDialog] = useState(false)
+  const [dupServerDialog, setDupServerDialog] = useState(false)
+  const [testConnection, setTestConnection] = useState(false)
   const [deleteServerDialog, setDeleteServerDialog] = useState(false)
   const [deleteServersDialog, setDeleteServersDialog] = useState(false)
   const [server, setServer] = useState<ModelServer>(emptyServer)
@@ -52,6 +59,12 @@ const Server: React.FC<ServerProps> = ({}) => {
     { name: 'STARTTLS', value: 'STARTTLS' },
     { name: 'SSL/TLS', value: 'TLS' }
   ]
+  const authProtocols = [
+    { name: 'Plain', value: 'plain' },
+    // { name: 'Login', value: 'login' },
+    { name: 'CRAM-MD5', value: 'cram-md5' }
+  ]
+  const queryClient = useQueryClient()
   const serverRes = useQuery({
     queryKey: ['servers'],
     queryFn: () => {
@@ -70,6 +83,7 @@ const Server: React.FC<ServerProps> = ({}) => {
 
   const hideDialog = () => {
     setSubmitted(false)
+    setTestConnection(false)
     setServerDialog(false)
   }
 
@@ -80,15 +94,19 @@ const Server: React.FC<ServerProps> = ({}) => {
   const hideDeleteServersDialog = () => {
     setDeleteServersDialog(false)
   }
+  const hideDuplicateServerDialog = () => {
+    setDupServerDialog(false)
+  }
 
   const handleCreateServer = async () => {
     setSubmitted(true)
     if (server.name.trim()) {
       try {
         console.log(server)
-        const res = await createServer(server)
+        const res = await createServer({ server: server })
         if (res?.status == 200) {
           toast?.current?.show({ severity: 'success', summary: 'Success', detail: 'Server Created Successfully' })
+          setTestConnection(false)
           setServerDialog(false)
           setServer(emptyServer)
         } else toast?.current?.show({ severity: 'warning', summary: 'Warning', detail: 'Server Created Failed' })
@@ -97,70 +115,37 @@ const Server: React.FC<ServerProps> = ({}) => {
       }
     }
   }
+  const handleDuplicateServer = async () => {
+    try {
+      const res = await duplicateServer({
+        server: server
+      })
+      if (res?.status == 200) {
+        toast?.current?.show({ severity: 'success', summary: 'Success', detail: 'Client Duplicated Successfully' })
+        queryClient.invalidateQueries({ queryKey: [`servers`], exact: true })
+        setDupServerDialog(false)
+        setServer(emptyServer)
+      } else toast?.current?.show({ severity: 'warning', summary: 'Warning', detail: 'Client Duplicated Failed' })
+    } catch (error) {
+      toast?.current?.show({ severity: 'error', summary: 'Failed', detail: 'Client Updated Failed', life: 3000 })
+    }
+  }
 
   const editServer = (server: ModelServer) => {
     setServer({ ...server })
+    setTestConnection(false)
     setServerDialog(true)
+  }
+  const cloneClient = (server: ModelServer) => {
+    server.name = 'Copy of ' + server.name
+    setServer({ ...server })
+    setDupServerDialog(true)
   }
 
   const confirmDeleteServer = (rowData: ModelServer) => {
     // setProduct(product)
     setDeleteServerDialog(true)
   }
-
-  // const deleteProduct = () => {
-  //   const _products = products.filter((val) => val.id !== product.id)
-
-  //   setProducts(_products)
-  //   setDeleteServerDialog(false)
-  //   setProduct(emptyProduct)
-  //   toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 })
-  // }
-
-  // const findIndexById = (id) => {
-  //   let index = -1
-
-  //   for (let i = 0; i < products.length; i++) {
-  //     if (products[i].id === id) {
-  //       index = i
-  //       break
-  //     }
-  //   }
-
-  //   return index
-  // }
-
-  // const createId = () => {
-  //   let id = ''
-  //   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-
-  //   for (let i = 0; i < 5; i++) {
-  //     id += chars.charAt(Math.floor(Math.random() * chars.length))
-  //   }
-
-  //   return id
-  // }
-
-  // const confirmDeleteSelected = () => {
-  //   setDeleteServersDialog(true)
-  // }
-
-  // const deleteSelectedProducts = () => {
-  //   const _products = products.filter((val) => !selectedProducts.includes(val))
-
-  //   setProducts(_products)
-  //   setDeleteServersDialog(false)
-  //   setSelectedProducts(null)
-  //   toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 })
-  // }
-
-  // const onCategoryChange = (e) => {
-  //   const _product = { ...product }
-
-  //   _product['category'] = e.value
-  //   setProduct(_product)
-  // }
-
   const onInputChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>, name: string) => {
     const val = (e.target && e.target.value) || ''
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -232,6 +217,11 @@ const Server: React.FC<ServerProps> = ({}) => {
       {/* <Button label='Yes' icon='pi pi-check' severity='danger' onClick={deleteSelectedProducts} /> */}
     </>
   )
+  const duplicateServerDialogFooter = (
+    <>
+      <Button label='Clone' icon='pi pi-check' onClick={handleDuplicateServer} />
+    </>
+  )
   const statusBodyTemplate = (rowData: ModelServer) => {
     switch (rowData.isDefault) {
       case true:
@@ -247,6 +237,7 @@ const Server: React.FC<ServerProps> = ({}) => {
     return (
       <div>
         <Button icon='pi pi-user-edit' size='small' rounded outlined text onClick={() => editServer(rowData)} />
+        <Button icon='pi pi-clone' size='small' rounded outlined text onClick={() => cloneClient(rowData)} />
         <Button
           icon='pi pi-trash'
           size='small'
@@ -295,8 +286,11 @@ const Server: React.FC<ServerProps> = ({}) => {
             ></Column>
             <Column field='host' header='Host' sortable style={{ minWidth: '10rem' }}></Column>
             <Column field='port' header='Port' sortable style={{ minWidth: '10rem' }}></Column>
+            <Column field='authProtocol' header='Auth Protocol' sortable style={{ minWidth: '10rem' }}></Column>
             <Column field='username' header='Username' sortable style={{ minWidth: '10rem' }}></Column>
             <Column field='password' header='Password' sortable style={{ minWidth: '10rem' }}></Column>
+            <Column field='fromName' header='From Name' sortable style={{ minWidth: '10rem' }}></Column>
+            <Column field='fromAddress' header='From Address' sortable style={{ minWidth: '10rem' }}></Column>
             <Column
               field='tlsType'
               header='TLS Type'
@@ -352,6 +346,21 @@ const Server: React.FC<ServerProps> = ({}) => {
               <InputText id='port' value={server.port} onChange={(e) => onInputChange(e, 'port')} required />
             </div>
             <div className='field'>
+              <label htmlFor='authProtocol' className='font-bold'>
+                Auth Protocol
+              </label>
+              <Dropdown
+                id='authProtocol'
+                value={server.authProtocol}
+                onChange={(e) => onDropdownChange(e, 'authProtocol')}
+                options={authProtocols}
+                optionLabel='name'
+                optionValue='value'
+                placeholder='Select a Auth Protocol'
+                className='w-full md:w-14rem'
+              />
+            </div>
+            <div className='field'>
               <label htmlFor='username' className='font-bold'>
                 Username
               </label>
@@ -370,6 +379,28 @@ const Server: React.FC<ServerProps> = ({}) => {
                 id='password'
                 value={server.password}
                 onChange={(e) => onInputChange(e, 'password')}
+                required
+              />
+            </div>
+            <div className='field'>
+              <label htmlFor='fromName' className='font-bold'>
+                From Name
+              </label>
+              <InputText
+                id='fromName'
+                value={server.fromName}
+                onChange={(e) => onInputChange(e, 'fromName')}
+                required
+              />
+            </div>
+            <div className='field'>
+              <label htmlFor='fromAddress' className='font-bold'>
+                From Address
+              </label>
+              <InputText
+                id='fromAddress'
+                value={server.fromAddress}
+                onChange={(e) => onInputChange(e, 'fromAddress')}
                 required
               />
             </div>
@@ -449,11 +480,13 @@ const Server: React.FC<ServerProps> = ({}) => {
               <label htmlFor='tlsSkipVerify' className='font-bold'>
                 Skip Verification
               </label>
-              <InputSwitch
-                id='tlsSkipVerify'
-                checked={server.tlsSkipVerify}
-                onChange={(e) => onInputSwitchChange(e, 'tlsSkipVerify')}
-              ></InputSwitch>
+              <div className='flex justify-center items-center'>
+                <InputSwitch
+                  id='tlsSkipVerify'
+                  checked={server.tlsSkipVerify}
+                  onChange={(e) => onInputSwitchChange(e, 'tlsSkipVerify')}
+                ></InputSwitch>
+              </div>
             </div>
             <div className='field'>
               <label htmlFor='tlsType' className='font-bold'>
@@ -469,6 +502,32 @@ const Server: React.FC<ServerProps> = ({}) => {
                 placeholder='Select a Tls Type'
                 className='w-full md:w-14rem'
               />
+            </div>
+          </div>
+          <div
+            className={`mt-3 border-t border-b cursor-pointer ${testConnection ? '' : 'flex justify-end'}`}
+            onClick={() => setTestConnection(true)}
+          >
+            <span className={testConnection ? `hidden` : `text-blue-600 mt-3 mb-3`}>
+              <i className='pi pi-bolt'></i>
+              Test connection
+            </span>
+            <div className={testConnection ? 'flex justify-between mt-6 mb-6' : 'hidden'}>
+              <div>
+                <span className='font-bold'>Default from email</span>
+                <p>{server.fromName + '<' + server.fromAddress + '>'}</p>
+              </div>
+              <FloatLabel>
+                <InputText
+                  id='toEmail'
+                  value={toEmail}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setToEmail(e.target.value)}
+                />
+                <label htmlFor='toEmail'>To Email</label>
+              </FloatLabel>
+              <div>
+                <Button label='Send Mail' icon='pi pi-check' onClick={handleDuplicateServer} />
+              </div>
             </div>
           </div>
         </Dialog>
@@ -504,6 +563,30 @@ const Server: React.FC<ServerProps> = ({}) => {
           <div className='confirmation-content'>
             <i className='pi pi-exclamation-triangle mr-3' style={{ fontSize: '2rem' }} />
             {server && <span>Are you sure you want to delete the selected products?</span>}
+          </div>
+        </Dialog>
+        <Dialog
+          visible={dupServerDialog}
+          style={{ width: '32rem' }}
+          breakpoints={{ '960px': '75vw', '641px': '90vw' }}
+          header='Clone Client'
+          modal
+          footer={duplicateServerDialogFooter}
+          onHide={hideDuplicateServerDialog}
+        >
+          <div className='flex justify-between items-center'>
+            <label htmlFor='name' className='font-bold'>
+              Name
+            </label>
+            <InputText
+              id='name'
+              value={server.name}
+              onChange={(e) => onInputChange(e, 'name')}
+              required
+              autoFocus
+              className={classNames({ 'p-invalid': submitted && !server.name })}
+            />
+            {submitted && !server.name && <small className='p-error'>Name is required.</small>}
           </div>
         </Dialog>
       </div>
