@@ -13,6 +13,7 @@ type (
 		UpdateClient(context.Context, *domain.Client) (*domain.Client, error)
 		DeleteClient(ctx context.Context, id int64) error
 		GetClient(ctx context.Context, id int64) (*domain.Client, error)
+		GetClientByApiKey(ctx context.Context, apiKey string) (*domain.Client, error)
 		GetClients(ctx context.Context, limit, offset int32) ([]*domain.Client, error)
 	}
 
@@ -21,7 +22,7 @@ type (
 		UpdateClient(context.Context, *domain.Client) (*domain.Client, error)
 		DeleteClient(ctx context.Context, id int64) error
 		GetClient(ctx context.Context, id int64) (*domain.Client, error)
-		GetClientEx(ctx context.Context, id int64) (*sharedkernel.ClientExtra, error)
+		GetClientEx(ctx context.Context, apiKey string) (*sharedkernel.ClientExtra, error)
 		GetClients(ctx context.Context, limit, offset int32) ([]*domain.Client, error)
 	}
 )

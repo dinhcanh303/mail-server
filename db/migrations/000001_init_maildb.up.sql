@@ -7,6 +7,7 @@ CREATE TABLE
         name VARCHAR(255) NOT NULL,
         server_id BIGINT NOT NULL,
         template_id BIGINT NOT NULL,
+        api_key VARCHAR(255) NOT NULL UNIQUE,
         is_default BOOLEAN NOT NULL DEFAULT FALSE,
         created_at timestamp with time zone NOT NULL DEFAULT current_timestamp,
         updated_at timestamp with time zone NOT NULL DEFAULT (now())
@@ -46,16 +47,17 @@ CREATE TABLE
 CREATE TABLE 
     mail.histories (
         id BIGSERIAL PRIMARY KEY,
-        from_ TEXT NOT NULL,
+        api_key VARCHAR(255) NOT NULL,
         to_ TEXT NOT NULL,
         subject TEXT DEFAULT NULL,
         cc TEXT DEFAULT NULL,
         bcc TEXT DEFAULT NULL,
-        content JSONB NOT NULL DEFAULT '{}',
+        content JSONB NOT NULL DEFAULT '{}'::JSONB,
         status VARCHAR(255) DEFAULT NULL,
         created_at timestamp with time zone NOT NULL DEFAULT current_timestamp,
         updated_at timestamp with time zone NOT NULL DEFAULT (now())
 );
+
 --insert default 
 INSERT INTO mail.templates 
 (
@@ -188,6 +190,7 @@ INSERT INTO mail.clients
     name,
     server_id,
     template_id,
+    api_key,
     is_default
-) VALUES (1,'default',1,1,true);
+) VALUES (1,'default',1,1,'292d1e3faa524e36c22e00eb061efe0f6a06bec9629266412aa76ce3123435b9',true);
 COMMIT;

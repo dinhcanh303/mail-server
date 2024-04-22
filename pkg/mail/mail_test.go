@@ -3,8 +3,6 @@ package mail
 import (
 	"testing"
 
-	configs "github.com/dinhcanh303/mail-server/pkg/config"
-	"github.com/dinhcanh303/mail-server/pkg/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -12,12 +10,6 @@ func TestSendMail(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
-	err := utils.LoadFileEnvOnLocal()
-	require.NoError(t, err)
-	config, err := configs.NewConfigMail()
-	require.NoError(t, err)
-	require.NotEmpty(t, config)
-
 	senderMail := NewEmailSender()
 	subject := "Email test"
 	content := `<h1>Hello world</h1>
@@ -25,6 +17,6 @@ func TestSendMail(t *testing.T) {
 
 	to := []string{"dinhcanhng303@gmail.com"}
 	// attachFiles := []string{"../../README.md"}
-	err = senderMail.SendEmail(subject, content, to, nil, nil, nil)
+	err := senderMail.SendEmail(subject, content, to, nil, nil, nil)
 	require.NoError(t, err)
 }

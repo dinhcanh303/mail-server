@@ -6,6 +6,7 @@ import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
 
 option go_package = "github.com/dinhcanh303/mail-server/api/mail/v1";
 
@@ -237,22 +238,19 @@ message TestSendMailRequest{
     string username = 4;
     string password = 5;
     string tls_type = 6;
-    bool tls_skip_verify = 7;
-    int64 max_connections = 8;
-    int64 idle_timeout = 9;
-    int64 retries = 10;
-    string to = 11;
-    string content = 12;
+    int64 max_connections = 7;
+    int64 idle_timeout = 8;
+    int64 retries = 9;
+    string to = 10;
+    string content = 11;
 }
 message TestSendMailResponse{}
 message SendMailRequest {
-    int64 client_id = 1;
-    string from = 2;
-    string to = 3;
-    string subject = 4;
-    string cc = 5;
-    string bcc = 6;
-    google.protobuf.Any content = 7;
+    string to = 1;
+    string subject = 2;
+    string cc = 3;
+    string bcc = 4;
+    google.protobuf.Struct content = 5;
 }
 message SendMailResponse{}
 message DuplicateClientRequest {
@@ -295,9 +293,10 @@ message Client {
     string name = 2;
     int64 server_id = 3;
     int64 template_id = 4;
-    bool is_default = 5;
-    google.protobuf.Timestamp created_at = 6;
-    google.protobuf.Timestamp updated_at = 7;
+    string api_key = 5;
+    bool is_default = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
 
 }
 message CreateTemplateRequest{
@@ -394,14 +393,13 @@ message Server {
     string from_name = 8;
     string from_address = 9;
     string tls_type = 10;
-    bool tls_skip_verify = 11;
-    int64 max_connections = 12;
-    int64 idle_timeout = 13;
-    int64 retries = 14;
-    int64 wait_timeout = 15;
-    bool is_default = 16;
-    google.protobuf.Timestamp created_at = 17;
-    google.protobuf.Timestamp updated_at = 18;
+    int64 max_connections = 11;
+    int64 idle_timeout = 12;
+    int64 retries = 13;
+    int64 wait_timeout = 14;
+    bool is_default = 15;
+    google.protobuf.Timestamp created_at = 16;
+    google.protobuf.Timestamp updated_at = 17;
 }
 message LogoutRequest{}
 message LogoutResponse{}

@@ -9,6 +9,7 @@ import (
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/template"
 	sharedkernel "github.com/dinhcanh303/mail-server/internal/pkg/shared_kernel"
 	"github.com/dinhcanh303/mail-server/pkg/redis"
+	"github.com/dinhcanh303/mail-server/pkg/utils"
 	"github.com/google/wire"
 	"github.com/pkg/errors"
 )
@@ -36,11 +37,15 @@ func NewUseCase(
 	}
 }
 
+const (
+	apiKeyGenBit = 32
+)
+
 var UseCaseSet = wire.NewSet(NewUseCase)
 
 // GetClientEx implements UseCase.
-func (s *service) GetClientEx(ctx context.Context, id int64) (*sharedkernel.ClientExtra, error) {
-	client, err := s.GetClient(ctx, id)
+func (s *service) GetClientEx(ctx context.Context, apiKey string) (*sharedkernel.ClientExtra, error) {
+	client, err := s.repo.GetClientByApiKey(ctx, apiKey)
 	if err != nil {
 		return nil, errors.Wrap(err, "service.GetClientEx failed")
 	}
@@ -57,6 +62,7 @@ func (s *service) GetClientEx(ctx context.Context, id int64) (*sharedkernel.Clie
 		Name:      client.Name,
 		Server:    *server,
 		Template:  *template,
+		ApiKey:    client.ApiKey,
 		CreatedAt: client.CreatedAt,
 		UpdatedAt: client.UpdatedAt,
 	}, nil
@@ -64,7 +70,12 @@ func (s *service) GetClientEx(ctx context.Context, id int64) (*sharedkernel.Clie
 
 // CreateClient implements UseCase.
 func (s *service) CreateClient(ctx context.Context, client *domain.Client) (*domain.Client, error) {
-	client, err := s.repo.CreateClient(ctx, client)
+	apiKey, err := utils.GenerateRandomHexBytes(apiKeyGenBit)
+	if err != nil {
+		return nil, errors.Wrap(err, "service.CreateClient api key failed")
+	}
+	client.ApiKey = apiKey
+	client, err = s.repo.CreateClient(ctx, client)
 	if err != nil {
 		return nil, errors.Wrap(err, "service.CreateClient failed")
 	}

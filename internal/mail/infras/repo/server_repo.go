@@ -56,10 +56,6 @@ func (s *serverRepo) CreateServer(ctx context.Context, server *domain.Server) (*
 			String: string(server.TLSType),
 			Valid:  string(server.TLSType) != "",
 		},
-		TlsSkipVerify: sql.NullBool{
-			Bool:  server.TLSSkipVerify,
-			Valid: server.TLSSkipVerify,
-		},
 		MaxConnections: sql.NullInt64{
 			Int64: server.MaxConnections,
 			Valid: server.MaxConnections > 0,
@@ -173,10 +169,6 @@ func (s *serverRepo) UpdateServer(ctx context.Context, server *domain.Server) (*
 			String: string(server.TLSType),
 			Valid:  string(server.TLSType) == "",
 		},
-		TlsSkipVerify: sql.NullBool{
-			Bool:  server.TLSSkipVerify,
-			Valid: server.TLSSkipVerify,
-		},
 		MaxConnections: sql.NullInt64{
 			Int64: server.MaxConnections,
 			Valid: server.MaxConnections > 0,
@@ -211,7 +203,6 @@ func repoServerToDomainServer(result postgresql.MailServer) *domain.Server {
 		FromName:       result.FromName.String,
 		FromAddress:    result.FromAddress.String,
 		TLSType:        domain.TLSType(result.TlsType.String),
-		TLSSkipVerify:  result.TlsSkipVerify.Bool,
 		MaxConnections: result.MaxConnections.Int64,
 		Retries:        result.Retries.Int64,
 		IdleTimeout:    result.IdleTimeout.Int64,

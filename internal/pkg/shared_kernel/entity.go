@@ -11,6 +11,7 @@ type ClientExtra struct {
 	Name      string          `json:"name"`
 	Server    domain.Server   `json:"server"`
 	Template  domain.Template `json:"template"`
+	ApiKey    string          `json:"api_key"`
 	CreatedAt time.Time       `json:"created_at"`
 	UpdatedAt time.Time       `json:"updated_at"`
 }

@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"log/slog"
 	"strings"
 	"text/template"
 
@@ -36,7 +37,8 @@ func NewMailEventHandler(historyService history.UseCase, sendMail mail.EmailSend
 
 // Handle implements events.MailEventHandler.
 func (s *mailEventHandler) Handle(ctx context.Context, event *event.SendMailEvent) error {
-	client, err := s.serviceClient.GetClientEx(ctx, event.ClientId)
+	slog.Info("Handle")
+	client, err := s.serviceClient.GetClientEx(ctx, event.History.ApiKey)
 	if err != nil {
 		s.historyService.UpdateHistory(ctx, &domain.History{
 			ID:     event.History.ID,
@@ -51,20 +53,28 @@ func (s *mailEventHandler) Handle(ctx context.Context, event *event.SendMailEven
 	to := strings.Split(event.History.To, ",")
 	cc := strings.Split(event.History.Cc, ",")
 	bcc := strings.Split(event.History.Bcc, ",")
-	s.sendMail.Configure()
-	var retries = client.Server.Retries
-	for retries > 0 {
-		err = s.sendMail.SendEmail(event.History.Subject, content, to, cc, bcc, []string{})
-		if err == nil {
-			break
-		}
-		retries--
-	}
+	s.sendMail.Configure(
+		mail.Username(client.Server.UserName),
+		mail.Password(client.Server.Password),
+		mail.Host(client.Server.Host),
+		mail.Port(string(client.Server.Port)),
+		mail.FromName(client.Server.FromName),
+		mail.FromAddress(client.Server.FromAddress),
+		mail.AuthProtocol(client.Server.AuthProtocol),
+		mail.IDLETimeout(client.Server.IdleTimeout),
+		mail.Retries(client.Server.Retries),
+		mail.MaxConnections(client.Server.MaxConnections),
+		mail.WaitTimeout(client.Server.WaitTimeout),
+		mail.TypeTLS(string(client.Server.TLSType)),
+	)
+
+	err = s.sendMail.SendEmail(event.History.Subject, content, to, cc, bcc, []string{})
 	if err != nil {
 		s.historyService.UpdateHistory(ctx, &domain.History{
 			ID:     event.History.ID,
 			Status: "failed",
 		})
+		slog.Error("fail to send mail::", err)
 		return errors.Wrap(err, "failed to send email")
 	}
 	s.historyService.UpdateHistory(ctx, &domain.History{

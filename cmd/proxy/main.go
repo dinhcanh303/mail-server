@@ -64,6 +64,12 @@ func withLogger(h http.Handler) http.Handler {
 		h.ServeHTTP(w, r)
 	})
 }
+func withHeader(h http.Handler) http.Handler {
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			h.ServeHTTP(w, r)
+		})
+}
 func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -93,7 +99,7 @@ func main() {
 	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
 	s := &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
-		Handler: allowCORS(withLogger(mux)),
+		Handler: withHeader(allowCORS(withLogger(mux))),
 	}
 
 	//goroutine

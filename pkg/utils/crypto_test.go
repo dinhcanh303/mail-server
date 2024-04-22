@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -8,6 +9,7 @@ import (
 
 func TestGenerateRandomBytes(t *testing.T) {
 	key, err := GenerateRandomBytes(64)
+	fmt.Println(key)
 	require.NoError(t, err)
 	require.NotEmpty(t, key)
 	require.Equal(t, len(key), 64)

@@ -43,29 +43,29 @@ func FromAddress(fromAddress string) Option {
 	}
 }
 
-func MaxConnections(maxConnections int) Option {
+func MaxConnections(maxConnections int64) Option {
 	return func(e *emailSender) {
 		e.maxConnections = maxConnections
 	}
 }
-func IDLETimeout(idleTimeout int) Option {
+func IDLETimeout(idleTimeout int64) Option {
 	return func(e *emailSender) {
 		e.idleTimeout = idleTimeout
 	}
 }
-func WaitTimeout(waitTimeout int) Option {
+func WaitTimeout(waitTimeout int64) Option {
 	return func(e *emailSender) {
 		e.waitTimeout = waitTimeout
 	}
 }
 
-func Retries(retries int) Option {
+func Retries(retries int64) Option {
 	return func(e *emailSender) {
 		e.retries = retries
 	}
 }
-func SkipTLS(skipTls bool) Option {
+func TypeTLS(typeTls string) Option {
 	return func(e *emailSender) {
-		e.skipTls = skipTls
+		e.tlsType = typeTls
 	}
 }

@@ -9,7 +9,7 @@ import (
 
 type UseCase interface {
 	TestSendMail(context.Context) error
-	SendMail(ctx context.Context, clientId int64, history *domain.History) error
+	SendMail(ctx context.Context, history *domain.History) error
 }
 
 type MailEventPublisher interface {

@@ -6,7 +6,7 @@ import (
 
 type History struct {
 	ID        int64                  `json:"id"`
-	From      string                 `json:"from"`
+	ApiKey    string                 `json:"api_key"`
 	To        string                 `json:"to"`
 	Subject   string                 `json:"subject"`
 	Cc        string                 `json:"cc"`

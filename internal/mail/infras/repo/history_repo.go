@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 
 	"github.com/dinhcanh303/mail-server/internal/mail/domain"
 	"github.com/dinhcanh303/mail-server/internal/mail/infras/postgresql"
@@ -36,9 +37,14 @@ func (h *historyRepo) CreateHistory(ctx context.Context, history *domain.History
 		return nil, errors.Wrap(err, "serverRepo.CreateHistory db failed")
 	}
 	qtx := querier.WithTx(tx)
+	//Convert map to json
+	jsonData, err := json.Marshal(history.Content)
+	if err != nil {
+		return nil, errors.Wrap(err, "serverRepo.CreateHistory marshal failed")
+	}
 	result, err := qtx.CreateHistory(ctx, postgresql.CreateHistoryParams{
-		From: history.From,
-		To:   history.To,
+		ApiKey: history.ApiKey,
+		To:     history.To,
 		Subject: sql.NullString{
 			String: history.Subject,
 			Valid:  history.Subject != "",
@@ -55,7 +61,7 @@ func (h *historyRepo) CreateHistory(ctx context.Context, history *domain.History
 			String: history.Status,
 			Valid:  history.Status != "",
 		},
-		// Content:,
+		Content: jsonData,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "serverRepo.CreateHistory failed")
@@ -117,10 +123,6 @@ func (h *historyRepo) UpdateHistory(ctx context.Context, history *domain.History
 	qtx := querier.WithTx(tx)
 	result, err := qtx.UpdateHistory(ctx, postgresql.UpdateHistoryParams{
 		ID: history.ID,
-		From: sql.NullString{
-			String: history.From,
-			Valid:  history.From != "",
-		},
 		To: sql.NullString{
 			String: history.To,
 			Valid:  history.To != "",
@@ -151,7 +153,7 @@ func (h *historyRepo) UpdateHistory(ctx context.Context, history *domain.History
 func repoHistoryToDomainHistory(history postgresql.MailHistory) *domain.History {
 	return &domain.History{
 		ID:        history.ID,
-		From:      history.From,
+		ApiKey:    history.ApiKey,
 		To:        history.To,
 		Subject:   history.Subject.String,
 		Cc:        history.Cc.String,

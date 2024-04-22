@@ -2,6 +2,7 @@ package history
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/dinhcanh303/mail-server/internal/mail/domain"
 	"github.com/dinhcanh303/mail-server/pkg/redis"
@@ -30,6 +31,7 @@ func NewUseCase(
 
 // CreateHistory implements UseCase.
 func (s *service) CreateHistory(ctx context.Context, history *domain.History) (*domain.History, error) {
+	slog.Info("History", history)
 	history, err := s.repo.CreateHistory(ctx, history)
 	if err != nil {
 		return nil, errors.Wrap(err, "service.CreateHistory failed")

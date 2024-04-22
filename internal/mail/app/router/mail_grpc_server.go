@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"log/slog"
 
 	v1 "github.com/dinhcanh303/mail-server/api/mail/v1"
 	"github.com/dinhcanh303/mail-server/cmd/mail/config"
@@ -10,6 +11,8 @@ import (
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/sendmail"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/server"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/template"
+	"github.com/dinhcanh303/mail-server/pkg/constant"
+	"github.com/dinhcanh303/mail-server/pkg/utils"
 	"github.com/google/wire"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
@@ -81,7 +84,6 @@ func (m *mailGRPCServer) CreateServer(ctx context.Context, request *v1.CreateSer
 		request.Server.FromName,
 		request.Server.FromAddress,
 		request.Server.TlsType,
-		request.Server.TlsSkipVerify,
 		request.Server.MaxConnections,
 		request.Server.Retries,
 		request.Server.IdleTimeout,
@@ -113,7 +115,6 @@ func (m *mailGRPCServer) DuplicateServer(ctx context.Context, request *v1.Duplic
 			FromName:       server.FromName,
 			FromAddress:    server.FromAddress,
 			TLSType:        server.TLSType,
-			TLSSkipVerify:  server.TLSSkipVerify,
 			MaxConnections: server.MaxConnections,
 			IdleTimeout:    server.IdleTimeout,
 			Retries:        server.Retries,
@@ -170,7 +171,6 @@ func (m *mailGRPCServer) UpdateServer(ctx context.Context, request *v1.UpdateSer
 		FromName:       request.Server.FromName,
 		FromAddress:    request.Server.FromAddress,
 		TLSType:        domain.TLSType(request.Server.TlsType),
-		TLSSkipVerify:  request.Server.TlsSkipVerify,
 		MaxConnections: request.Server.MaxConnections,
 		Retries:        request.Server.Retries,
 		IdleTimeout:    request.Server.IdleTimeout,
@@ -352,12 +352,26 @@ func (m *mailGRPCServer) TestSendMail(ctx context.Context, request *v1.TestSendM
 	return nil, nil
 }
 func (m *mailGRPCServer) SendMail(ctx context.Context, request *v1.SendMailRequest) (*v1.SendMailResponse, error) {
-	err := m.ucSendMail.SendMail(ctx, int64(request.ClientId), &domain.History{
-		From:    request.From,
+	apiKey, err := utils.GetKeyMetadata(ctx, constant.ApiKey)
+	if err != nil {
+		return nil, errors.Wrap(err, "utils.GetKeyMetadata failed")
+	}
+	if apiKey == "" {
+		return nil, errors.New("Invalid Request")
+	}
+	slog.Info("RQ::", request)
+	// var content map[string]interface{}
+	// request.Content.AsMap()
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "json.Unmarshal content failed")
+	// }
+	err = m.ucSendMail.SendMail(ctx, &domain.History{
+		ApiKey:  apiKey,
 		To:      request.To,
 		Subject: request.Subject,
 		Cc:      request.Cc,
 		Bcc:     request.Bcc,
+		Content: request.Content.AsMap(),
 		Status:  "pending",
 	})
 	if err != nil {
@@ -378,7 +392,6 @@ func entityServerToProtobuf(entity *domain.Server) *v1.Server {
 		FromName:       entity.FromName,
 		FromAddress:    entity.FromAddress,
 		TlsType:        string(entity.TLSType),
-		TlsSkipVerify:  entity.TLSSkipVerify,
 		MaxConnections: entity.MaxConnections,
 		IdleTimeout:    entity.IdleTimeout,
 		Retries:        entity.Retries,
@@ -406,6 +419,7 @@ func entityClientToProtobuf(entity *domain.Client) *v1.Client {
 		ServerId:   entity.ServerID,
 		TemplateId: entity.TemplateID,
 		IsDefault:  entity.IsDefault,
+		ApiKey:     entity.ApiKey,
 		CreatedAt:  timestamppb.New(entity.CreatedAt),
 		UpdatedAt:  timestamppb.New(entity.UpdatedAt),
 	}

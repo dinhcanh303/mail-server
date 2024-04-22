@@ -9,12 +9,11 @@ INSERT INTO mail.servers (
     from_name,
     from_address,
     tls_type,
-    tls_skip_verify,
     max_connections,
     idle_timeout,
     retries,
     wait_timeout
-) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *;
+) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *;
 
 -- name: GetServer :one
 SELECT * FROM mail.servers WHERE id = $1;
@@ -33,7 +32,6 @@ UPDATE mail.servers SET
     from_name = COALESCE(sqlc.narg(from_name),from_name),
     from_address = COALESCE(sqlc.narg(from_address),from_address),
     tls_type = COALESCE(sqlc.narg(tls_type),tls_type),
-    tls_skip_verify = COALESCE(sqlc.narg(tls_skip_verify),tls_skip_verify),
     max_connections = COALESCE(sqlc.narg(max_connections),max_connections),
     idle_timeout = COALESCE(sqlc.narg(idle_timeout),idle_timeout),
     retries = COALESCE(sqlc.narg(retries),retries),
@@ -75,11 +73,15 @@ DELETE FROM mail.templates WHERE id = $1;
 INSERT INTO mail.clients (
     name,
     server_id,
-    template_id
-) VALUES ($1,$2,$3) RETURNING *;
+    template_id,
+    api_key
+) VALUES ($1,$2,$3,$4) RETURNING *;
 
 -- name: GetClient :one
 SELECT * FROM mail.clients WHERE id = $1;
+
+-- name: GetClientByApiKey :one
+SELECT * FROM mail.clients WHERE api_key = $1;
 
 -- name: GetClients :many
 SELECT * FROM mail.clients LIMIT $1 OFFSET $2;
@@ -97,7 +99,7 @@ DELETE FROM mail.clients WHERE id = $1;
 
 -- name: CreateHistory :one
 INSERT INTO mail.histories (
-    from_,
+    api_key,
     to_,
     subject,
     cc,
@@ -114,7 +116,6 @@ SELECT * FROM mail.histories LIMIT $1 OFFSET $2;
 
 -- name: UpdateHistory :one
 UPDATE mail.histories SET 
-    from_ = COALESCE(sqlc.narg(from_),from_),
     to_ = COALESCE(sqlc.narg(to_),to_),
     subject = COALESCE(sqlc.narg(subject),subject),
     cc = COALESCE(sqlc.narg(cc),cc),

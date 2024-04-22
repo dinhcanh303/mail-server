@@ -15,6 +15,7 @@ type MailClient struct {
 	Name       string    `json:"name"`
 	ServerID   int64     `json:"server_id"`
 	TemplateID int64     `json:"template_id"`
+	ApiKey     string    `json:"api_key"`
 	IsDefault  bool      `json:"is_default"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
@@ -22,7 +23,7 @@ type MailClient struct {
 
 type MailHistory struct {
 	ID        int64           `json:"id"`
-	From      string          `json:"from_"`
+	ApiKey    string          `json:"api_key"`
 	To        string          `json:"to_"`
 	Subject   sql.NullString  `json:"subject"`
 	Cc        sql.NullString  `json:"cc"`

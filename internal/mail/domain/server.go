@@ -21,7 +21,6 @@ type Server struct {
 	FromName       string    `json:"from_name"`
 	FromAddress    string    `json:"from_address"`
 	TLSType        TLSType   `json:"tls_type"`
-	TLSSkipVerify  bool      `json:"skip_tls_verify"`
 	MaxConnections int64     `json:"max_connections"`
 	Retries        int64     `json:"retries"`
 	IdleTimeout    int64     `json:"idle_timeout"`
@@ -31,7 +30,7 @@ type Server struct {
 	UpdatedAt      time.Time `json:"updated_at"`
 }
 
-func NewServer(name string, host string, port int64, authProtocol, username, password, fromName, fromAddress, tlsType string, tlsSkipVerify bool,
+func NewServer(name string, host string, port int64, authProtocol, username, password, fromName, fromAddress, tlsType string,
 	maxConnections int64, retries int64, idleTimeout int64, waitTimeout int64,
 ) *Server {
 	if tlsType == "" {
@@ -65,7 +64,6 @@ func NewServer(name string, host string, port int64, authProtocol, username, pas
 		UserName:       username,
 		Password:       password,
 		TLSType:        TLSType(tlsType),
-		TLSSkipVerify:  tlsSkipVerify,
 		MaxConnections: maxConnections,
 		Retries:        retries,
 		IdleTimeout:    idleTimeout,

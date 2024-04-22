@@ -38,6 +38,7 @@ func (c *clientRepo) CreateClient(ctx context.Context, client *domain.Client) (*
 		Name:       client.Name,
 		ServerID:   client.ServerID,
 		TemplateID: client.TemplateID,
+		ApiKey:     client.ApiKey,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "serverRepo.CreateServer failed")
@@ -59,6 +60,17 @@ func (c *clientRepo) DeleteClient(ctx context.Context, id int64) error {
 		return errors.Wrap(err, "serverRepo.DeleteClient failed")
 	}
 	return tx.Commit()
+}
+
+// GetClientByApiKey implements client.ClientRepo.
+func (c *clientRepo) GetClientByApiKey(ctx context.Context, apiKey string) (*domain.Client, error) {
+	db := c.pg.GetDB()
+	querier := postgresql.New(db)
+	result, err := querier.GetClientByApiKey(ctx, apiKey)
+	if err != nil {
+		return nil, errors.Wrap(err, "serverRepo.GetClientByApiKey failed")
+	}
+	return repoToDOmainClient(result), nil
 }
 
 // GetClient implements client.ClientRepo.
@@ -126,6 +138,7 @@ func repoToDOmainClient(entity postgresql.MailClient) *domain.Client {
 		ServerID:   entity.ServerID,
 		TemplateID: entity.TemplateID,
 		IsDefault:  entity.IsDefault,
+		ApiKey:     entity.ApiKey,
 		CreatedAt:  entity.CreatedAt,
 		UpdatedAt:  entity.UpdatedAt,
 	}

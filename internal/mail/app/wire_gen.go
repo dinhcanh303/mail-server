@@ -47,6 +47,8 @@ func InitApp(cfg *config.Config, cfg2 *configs.Redis, dbConnStr postgres.DBConnS
 	templateUseCase := template.NewUseCase(redisEngine, templateRepo)
 	clientRepo := repo.NewClientRepo(dbEngine)
 	clientUseCase := client.NewUseCase(redisEngine, clientRepo, useCase, templateUseCase)
+	historyRepo := repo.NewHistoryRepo(dbEngine)
+	historyUseCase := history.NewUseCase(redisEngine, historyRepo)
 	connection, cleanup3, err := rabbitMQFunc(rabbitMQConnStr)
 	if err != nil {
 		cleanup2()
@@ -61,10 +63,8 @@ func InitApp(cfg *config.Config, cfg2 *configs.Redis, dbConnStr postgres.DBConnS
 		return nil, nil, err
 	}
 	mailEventPublisher := infras.NewMailEventPublisher(eventPublisher)
-	sendmailUseCase := sendmail.NewUseCase(redisEngine, mailEventPublisher)
+	sendmailUseCase := sendmail.NewUseCase(redisEngine, historyUseCase, mailEventPublisher)
 	mailServiceServer := router.NewMailGRPCServer(grpcServer, templateUseCase, useCase, clientUseCase, sendmailUseCase, cfg)
-	historyRepo := repo.NewHistoryRepo(dbEngine)
-	historyUseCase := history.NewUseCase(redisEngine, historyRepo)
 	emailSender := mailServer()
 	mailEventHandler := handlers.NewMailEventHandler(historyUseCase, emailSender, clientUseCase)
 	eventConsumer, err := consumer.NewConsumer(connection)

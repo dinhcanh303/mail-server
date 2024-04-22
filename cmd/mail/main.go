@@ -14,6 +14,8 @@ import (
 	"github.com/dinhcanh303/mail-server/pkg/logger"
 	"github.com/dinhcanh303/mail-server/pkg/postgres"
 	"github.com/dinhcanh303/mail-server/pkg/rabbitmq"
+	"github.com/dinhcanh303/mail-server/pkg/rabbitmq/consumer"
+	"github.com/dinhcanh303/mail-server/pkg/rabbitmq/publisher"
 	"github.com/sirupsen/logrus"
 	"go.uber.org/automaxprocs/maxprocs"
 	"golang.org/x/exp/slog"
@@ -100,27 +102,32 @@ func main() {
 }
 
 func prepareApp(ctx context.Context, cancel context.CancelFunc, cfg *config.Config, cfgRedis *configs.Redis, server *grpc.Server) func() {
-	_, cleanup, err := app.InitApp(cfg, cfgRedis, postgres.DBConnString(cfg.PG.DbURL), rabbitmq.RabbitMQConnStr(cfg.RabbitMQ.URL), server)
+	a, cleanup, err := app.InitApp(cfg, cfgRedis, postgres.DBConnString(cfg.PG.DbURL), rabbitmq.RabbitMQConnStr(cfg.RabbitMQ.URL), server)
 	if err != nil {
 		slog.Error("failed init app", err)
 		cancel()
 		<-ctx.Done()
 	}
-	// a.Consumer.Configure(
-	// 	consumer.ExChangeName("search-exchange"),
-	// 	consumer.QueueName("search-queue"),
-	// 	consumer.BindingKey("search-routing-key"),
-	// 	consumer.ConsumerTag("search-consumer"),
-	// )
+	a.Publisher.Configure(
+		publisher.ExChangeName("sendmail-exchange"),
+		publisher.BindingKey("sendmail-routing-key"),
+		publisher.MessageTypeName("sendmail"),
+	)
+	a.Consumer.Configure(
+		consumer.ExChangeName("sendmail-exchange"),
+		consumer.QueueName("sendmail-queue"),
+		consumer.BindingKey("sendmail-routing-key"),
+		consumer.ConsumerTag("sendmail-consumer"),
+	)
 
-	// go func() {
-	// 	err1 := a.Consumer.StartConsumer(a.Worker)
-	// 	if err1 != nil {
-	// 		slog.Error("failed to start Consumer", err1)
-	// 		cancel()
-	// 		<-ctx.Done()
-	// 	}
-	// }()
+	go func() {
+		err1 := a.Consumer.StartConsumer(a.Worker)
+		if err1 != nil {
+			slog.Error("failed to start Consumer", err1)
+			cancel()
+			<-ctx.Done()
+		}
+	}()
 
 	return cleanup
 }
