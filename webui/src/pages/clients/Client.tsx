@@ -286,6 +286,7 @@ const Client: React.FC<ClientProps> = ({}) => {
               body={isDefaultBodyClient}
               style={{ minWidth: '5rem' }}
             ></Column>
+            <Column field='apiKey' header='Api Key' sortable style={{ minWidth: '20rem' }}></Column>
             <Column field='templateId' header='Template ID' sortable style={{ minWidth: '20rem' }}></Column>
             <Column field='serverId' header='Server ID' sortable style={{ minWidth: '20rem' }}></Column>
             <Column field='createdAt' header='Created At' sortable style={{ minWidth: '12rem' }}></Column>
