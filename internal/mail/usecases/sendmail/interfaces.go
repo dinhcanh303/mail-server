@@ -8,7 +8,8 @@ import (
 )
 
 type UseCase interface {
-	TestSendMail(context.Context) error
+	TestSendMail(ctx context.Context, host string, port int64, authProtocol, username, password, tlsType, fromName, fromAddress string,
+		idleTimeout, maxConnections, retries, waitTimeout int64, to string) error
 	SendMail(ctx context.Context, history *domain.History) error
 }
 

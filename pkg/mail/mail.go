@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/smtp"
 
 	"github.com/jordan-wright/email"
@@ -17,12 +16,38 @@ const (
 	_waitTimeout    = 5
 	_tlsType        = "STARTTLS"
 	_fromName       = "tlcmodular"
-	_fromAddress    = "canhngo@tlcmodular.com"
+	_fromAddress    = "info@tlcmodular.com"
 	_host           = "smtp.office365.com"
-	_port           = "25"
-	_authProtocol   = "plain"
+	_port           = "587"
+	_authProtocol   = "login"
 	_password       = "SwordfishStanley!#$@"
 )
+
+type loginAuth struct {
+	username, password string
+}
+
+func LoginAuth(username, password string) smtp.Auth {
+	return &loginAuth{username, password}
+}
+
+func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
+	return "LOGIN", []byte{}, nil
+}
+
+func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
+	if more {
+		switch string(fromServer) {
+		case "Username:":
+			return []byte(a.username), nil
+		case "Password:":
+			return []byte(a.password), nil
+		default:
+			return nil, errors.New("Unkown fromServer")
+		}
+	}
+	return nil, nil
+}
 
 type emailSender struct {
 	username, password, host, port, authProtocol, fromName, fromAddress, tlsType string
@@ -36,7 +61,7 @@ func (c *emailSender) Configure(opts ...Option) EmailSender {
 	return c
 }
 
-// SendEmail implements EmailSender.
+// // SendEmail implements EmailSender.
 func (sender *emailSender) SendEmail(subject string, content string, to []string, cc []string, bcc []string, attachFiles []string) error {
 	// emailFromName := sender.fromName
 	emailFromAddress := sender.fromAddress
@@ -44,6 +69,7 @@ func (sender *emailSender) SendEmail(subject string, content string, to []string
 	password := sender.password
 	emailHost := sender.host
 	emailPort := sender.port
+	smtpServerAddress := fmt.Sprintf("%s:%s", emailHost, emailPort)
 	e := email.NewEmail()
 	// e.From = fmt.Sprintf("%s<%s>", emailFromName, emailFromAddress)
 	e.From = "info@tlcmodular.com"
@@ -70,7 +96,7 @@ func (sender *emailSender) SendEmail(subject string, content string, to []string
 	default:
 		return errors.New("auth protocol not supported")
 	}
-	smtpServerAddress := fmt.Sprintf("%s:%s", emailHost, emailPort)
+
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
 		ServerName:         emailHost,
@@ -80,13 +106,10 @@ func (sender *emailSender) SendEmail(subject string, content string, to []string
 	for _retries > 0 {
 		switch sender.tlsType {
 		case "STARTTLS":
-			slog.Info("STARTTLS send mail")
 			err = e.SendWithStartTLS(smtpServerAddress, smtpAuth, tlsConfig)
 		case "TLS":
-			slog.Info("TLS send mail")
 			err = e.SendWithTLS(smtpServerAddress, smtpAuth, tlsConfig)
 		default:
-			slog.Info("Default send mail")
 			err = e.Send(smtpServerAddress, smtpAuth)
 		}
 		if err == nil {

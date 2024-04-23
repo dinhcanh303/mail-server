@@ -2,12 +2,12 @@ package router
 
 import (
 	"context"
-	"log/slog"
 
 	v1 "github.com/dinhcanh303/mail-server/api/mail/v1"
 	"github.com/dinhcanh303/mail-server/cmd/mail/config"
 	"github.com/dinhcanh303/mail-server/internal/mail/domain"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/client"
+	"github.com/dinhcanh303/mail-server/internal/mail/usecases/history"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/sendmail"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/server"
 	"github.com/dinhcanh303/mail-server/internal/mail/usecases/template"
@@ -27,6 +27,7 @@ type mailGRPCServer struct {
 	ucServer   server.UseCase
 	ucClient   client.UseCase
 	ucSendMail sendmail.UseCase
+	ucHistory  history.UseCase
 	cfg        *config.Config
 }
 
@@ -44,6 +45,7 @@ func NewMailGRPCServer(
 	ucServer server.UseCase,
 	ucClient client.UseCase,
 	ucSendMail sendmail.UseCase,
+	ucHistory history.UseCase,
 	cfg *config.Config,
 ) v1.MailServiceServer {
 	svc := mailGRPCServer{
@@ -51,6 +53,7 @@ func NewMailGRPCServer(
 		ucServer:   ucServer,
 		ucClient:   ucClient,
 		ucSendMail: ucSendMail,
+		ucHistory:  ucHistory,
 		cfg:        cfg,
 	}
 	v1.RegisterMailServiceServer(grpcServer, &svc)
@@ -348,7 +351,24 @@ func (m *mailGRPCServer) UpdateClient(ctx context.Context, request *v1.UpdateCli
 		Client: entityClientToProtobuf(result),
 	}, nil
 }
+
+func (m *mailGRPCServer) GetHistories(ctx context.Context, request *v1.GetHistoriesRequest) (*v1.GetHistoriesResponse, error) {
+	results, err := m.ucHistory.GetHistories(ctx, request.Limit, request.Offset)
+	if err != nil {
+		return nil, errors.Wrap(err, "ucServer.GetServers failed")
+	}
+	return &v1.GetHistoriesResponse{
+		Histories: lo.Map(results, func(item *domain.History, _ int) *v1.History {
+			return entityHistoryToProtobuf(item)
+		}),
+	}, nil
+}
 func (m *mailGRPCServer) TestSendMail(ctx context.Context, request *v1.TestSendMailRequest) (*v1.TestSendMailResponse, error) {
+	err := m.ucSendMail.TestSendMail(ctx, request.Host, request.Port, request.AuthProtocol, request.Username, request.Password, request.TlsType,
+		request.FromName, request.FromAddress, request.IdleTimeout, request.MaxConnections, request.Retries, request.WaitTimeout, request.To)
+	if err != nil {
+		return nil, errors.Wrap(err, "router.TestSendMail failed")
+	}
 	return nil, nil
 }
 func (m *mailGRPCServer) SendMail(ctx context.Context, request *v1.SendMailRequest) (*v1.SendMailResponse, error) {
@@ -359,12 +379,6 @@ func (m *mailGRPCServer) SendMail(ctx context.Context, request *v1.SendMailReque
 	if apiKey == "" {
 		return nil, errors.New("Invalid Request")
 	}
-	slog.Info("RQ::", request)
-	// var content map[string]interface{}
-	// request.Content.AsMap()
-	// if err != nil {
-	// 	return nil, errors.Wrap(err, "json.Unmarshal content failed")
-	// }
 	err = m.ucSendMail.SendMail(ctx, &domain.History{
 		ApiKey:  apiKey,
 		To:      request.To,
@@ -375,9 +389,23 @@ func (m *mailGRPCServer) SendMail(ctx context.Context, request *v1.SendMailReque
 		Status:  "pending",
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "ucSendMail.SendMail failed")
+		return nil, errors.Wrap(err, "router.SendMail failed")
 	}
 	return nil, nil
+}
+func entityHistoryToProtobuf(entity *domain.History) *v1.History {
+	return &v1.History{
+		Id:        entity.ID,
+		ApiKey:    entity.ApiKey,
+		Subject:   entity.Subject,
+		To:        entity.To,
+		Cc:        entity.Cc,
+		Bcc:       entity.Bcc,
+		Content:   utils.ToStruct(entity.Content),
+		Status:    entity.Status,
+		CreatedAt: timestamppb.New(entity.CreatedAt),
+		UpdatedAt: timestamppb.New(entity.UpdatedAt),
+	}
 }
 
 func entityServerToProtobuf(entity *domain.Server) *v1.Server {

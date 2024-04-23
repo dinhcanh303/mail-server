@@ -40,6 +40,7 @@ const (
 	MailService_GetClient_FullMethodName          = "/mail.v1.MailService/GetClient"
 	MailService_GetClients_FullMethodName         = "/mail.v1.MailService/GetClients"
 	MailService_DeleteClient_FullMethodName       = "/mail.v1.MailService/DeleteClient"
+	MailService_GetHistories_FullMethodName       = "/mail.v1.MailService/GetHistories"
 	MailService_SendMail_FullMethodName           = "/mail.v1.MailService/SendMail"
 	MailService_TestSendMail_FullMethodName       = "/mail.v1.MailService/TestSendMail"
 )
@@ -69,6 +70,7 @@ type MailServiceClient interface {
 	GetClient(ctx context.Context, in *GetClientRequest, opts ...grpc.CallOption) (*GetClientResponse, error)
 	GetClients(ctx context.Context, in *GetClientsRequest, opts ...grpc.CallOption) (*GetClientsResponse, error)
 	DeleteClient(ctx context.Context, in *DeleteClientRequest, opts ...grpc.CallOption) (*DeleteClientResponse, error)
+	GetHistories(ctx context.Context, in *GetHistoriesRequest, opts ...grpc.CallOption) (*GetHistoriesResponse, error)
 	SendMail(ctx context.Context, in *SendMailRequest, opts ...grpc.CallOption) (*SendMailResponse, error)
 	TestSendMail(ctx context.Context, in *TestSendMailRequest, opts ...grpc.CallOption) (*TestSendMailResponse, error)
 }
@@ -270,6 +272,15 @@ func (c *mailServiceClient) DeleteClient(ctx context.Context, in *DeleteClientRe
 	return out, nil
 }
 
+func (c *mailServiceClient) GetHistories(ctx context.Context, in *GetHistoriesRequest, opts ...grpc.CallOption) (*GetHistoriesResponse, error) {
+	out := new(GetHistoriesResponse)
+	err := c.cc.Invoke(ctx, MailService_GetHistories_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *mailServiceClient) SendMail(ctx context.Context, in *SendMailRequest, opts ...grpc.CallOption) (*SendMailResponse, error) {
 	out := new(SendMailResponse)
 	err := c.cc.Invoke(ctx, MailService_SendMail_FullMethodName, in, out, opts...)
@@ -313,6 +324,7 @@ type MailServiceServer interface {
 	GetClient(context.Context, *GetClientRequest) (*GetClientResponse, error)
 	GetClients(context.Context, *GetClientsRequest) (*GetClientsResponse, error)
 	DeleteClient(context.Context, *DeleteClientRequest) (*DeleteClientResponse, error)
+	GetHistories(context.Context, *GetHistoriesRequest) (*GetHistoriesResponse, error)
 	SendMail(context.Context, *SendMailRequest) (*SendMailResponse, error)
 	TestSendMail(context.Context, *TestSendMailRequest) (*TestSendMailResponse, error)
 	mustEmbedUnimplementedMailServiceServer()
@@ -384,6 +396,9 @@ func (UnimplementedMailServiceServer) GetClients(context.Context, *GetClientsReq
 }
 func (UnimplementedMailServiceServer) DeleteClient(context.Context, *DeleteClientRequest) (*DeleteClientResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteClient not implemented")
+}
+func (UnimplementedMailServiceServer) GetHistories(context.Context, *GetHistoriesRequest) (*GetHistoriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetHistories not implemented")
 }
 func (UnimplementedMailServiceServer) SendMail(context.Context, *SendMailRequest) (*SendMailResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMail not implemented")
@@ -782,6 +797,24 @@ func _MailService_DeleteClient_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MailService_GetHistories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetHistoriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MailServiceServer).GetHistories(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MailService_GetHistories_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MailServiceServer).GetHistories(ctx, req.(*GetHistoriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MailService_SendMail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SendMailRequest)
 	if err := dec(in); err != nil {
@@ -908,6 +941,10 @@ var MailService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteClient",
 			Handler:    _MailService_DeleteClient_Handler,
+		},
+		{
+			MethodName: "GetHistories",
+			Handler:    _MailService_GetHistories_Handler,
 		},
 		{
 			MethodName: "SendMail",

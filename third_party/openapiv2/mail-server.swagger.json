@@ -292,6 +292,45 @@
         ]
       }
     },
+    "/api/v1/histories": {
+      "get": {
+        "summary": "Get all histories mail service",
+        "operationId": "MailService_GetHistories",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetHistoriesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "MailService"
+        ]
+      }
+    },
     "/api/v1/login": {
       "post": {
         "summary": "Login mail service",
@@ -1214,6 +1253,18 @@
         }
       }
     },
+    "v1GetHistoriesResponse": {
+      "type": "object",
+      "properties": {
+        "histories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1History"
+          }
+        }
+      }
+    },
     "v1GetServerResponse": {
       "type": "object",
       "properties": {
@@ -1263,6 +1314,44 @@
             "type": "object",
             "$ref": "#/definitions/v1Template"
           }
+        }
+      }
+    },
+    "v1History": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "apiKey": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "cc": {
+          "type": "string"
+        },
+        "bcc": {
+          "type": "string"
+        },
+        "content": {
+          "type": "object"
+        },
+        "status": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -1407,15 +1496,15 @@
     "v1TestSendMailRequest": {
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string"
-        },
         "host": {
           "type": "string"
         },
         "port": {
           "type": "string",
           "format": "int64"
+        },
+        "authProtocol": {
+          "type": "string"
         },
         "username": {
           "type": "string"
@@ -1424,6 +1513,12 @@
           "type": "string"
         },
         "tlsType": {
+          "type": "string"
+        },
+        "fromName": {
+          "type": "string"
+        },
+        "fromAddress": {
           "type": "string"
         },
         "maxConnections": {
@@ -1438,10 +1533,11 @@
           "type": "string",
           "format": "int64"
         },
-        "to": {
-          "type": "string"
+        "waitTimeout": {
+          "type": "string",
+          "format": "int64"
         },
-        "content": {
+        "to": {
           "type": "string"
         }
       }

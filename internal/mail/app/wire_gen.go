@@ -63,9 +63,9 @@ func InitApp(cfg *config.Config, cfg2 *configs.Redis, dbConnStr postgres.DBConnS
 		return nil, nil, err
 	}
 	mailEventPublisher := infras.NewMailEventPublisher(eventPublisher)
-	sendmailUseCase := sendmail.NewUseCase(redisEngine, historyUseCase, mailEventPublisher)
-	mailServiceServer := router.NewMailGRPCServer(grpcServer, templateUseCase, useCase, clientUseCase, sendmailUseCase, cfg)
 	emailSender := mailServer()
+	sendmailUseCase := sendmail.NewUseCase(redisEngine, historyUseCase, mailEventPublisher, emailSender)
+	mailServiceServer := router.NewMailGRPCServer(grpcServer, templateUseCase, useCase, clientUseCase, sendmailUseCase, historyUseCase, cfg)
 	mailEventHandler := handlers.NewMailEventHandler(historyUseCase, emailSender, clientUseCase)
 	eventConsumer, err := consumer.NewConsumer(connection)
 	if err != nil {

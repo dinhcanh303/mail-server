@@ -210,6 +210,15 @@ service MailService {
             description: ""
         };
     }
+    rpc GetHistories(GetHistoriesRequest) returns (GetHistoriesResponse){
+        option (google.api.http) = {
+            get: "/api/v1/histories",
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Get all histories mail service"
+            description: ""
+        };
+    }
     rpc SendMail(SendMailRequest) returns (SendMailResponse){
         option (google.api.http) = {
             post: "/api/v1/mails",
@@ -232,17 +241,19 @@ service MailService {
     }
 }
 message TestSendMailRequest{
-    string name = 1;
-    string host = 2;
-    int64 port = 3;
+    string host = 1;
+    int64 port = 2;
+    string auth_protocol = 3;
     string username = 4;
     string password = 5;
     string tls_type = 6;
-    int64 max_connections = 7;
-    int64 idle_timeout = 8;
-    int64 retries = 9;
-    string to = 10;
-    string content = 11;
+    string from_name = 7;
+    string from_address = 8;
+    int64 max_connections = 9;
+    int64 idle_timeout = 10;
+    int64 retries = 11;
+    int64 wait_timeout = 12;
+    string to = 13;
 }
 message TestSendMailResponse{}
 message SendMailRequest {
@@ -253,6 +264,25 @@ message SendMailRequest {
     google.protobuf.Struct content = 5;
 }
 message SendMailResponse{}
+message GetHistoriesRequest {
+    int32 limit = 1;
+    int32 offset = 2;
+}
+message GetHistoriesResponse {
+    repeated History histories = 1;
+}
+message History {
+    int64 id = 1;
+    string api_key = 2;
+    string to = 3;
+    string subject = 4;
+    string cc = 5;
+    string bcc = 6;
+    google.protobuf.Struct content = 7;
+    string status = 8;
+    google.protobuf.Timestamp created_at = 9;
+    google.protobuf.Timestamp updated_at = 10;
+}
 message DuplicateClientRequest {
     Client client = 1;
 }

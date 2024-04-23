@@ -151,6 +151,8 @@ func (h *historyRepo) UpdateHistory(ctx context.Context, history *domain.History
 }
 
 func repoHistoryToDomainHistory(history postgresql.MailHistory) *domain.History {
+	var content map[string]interface{}
+	json.Unmarshal([]byte(history.Content), &content)
 	return &domain.History{
 		ID:        history.ID,
 		ApiKey:    history.ApiKey,
@@ -159,6 +161,7 @@ func repoHistoryToDomainHistory(history postgresql.MailHistory) *domain.History 
 		Cc:        history.Cc.String,
 		Bcc:       history.Bcc.String,
 		Status:    history.Status.String,
+		Content:   content,
 		CreatedAt: history.CreatedAt,
 		UpdatedAt: history.UpdatedAt,
 	}
