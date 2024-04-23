@@ -27,15 +27,15 @@ const Template: React.FC<TemplateProps> = ({}) => {
     name: '',
     html: ''
   }
-  const [templates, setTemplates] = useState<ModelTemplate[] | null>(null)
+  const [templates, setTemplates] = useState<ModelTemplate[] | undefined>(undefined)
   const [templateDialog, setTemplateDialog] = useState(false)
   const [templatePreviewDialog, setTemplatePreviewDialog] = useState(false)
   const [deleteTemplateDialog, setDeleteTemplateDialog] = useState(false)
   const [deleteTemplatesDialog, setDeleteTemplatesDialog] = useState(false)
   const [template, setTemplate] = useState<ModelTemplate>(emptyTemplate)
-  const [selectedTemplates, setSelectedTemplates] = useState<ModelTemplate | null>(null)
+  const [selectedTemplates, setSelectedTemplates] = useState<ModelTemplate[]>([])
   const [submitted, setSubmitted] = useState(false)
-  const [globalFilter, setGlobalFilter] = useState(null)
+  const [globalFilter, setGlobalFilter] = useState<string>('')
   const toast = useRef(null)
   const dt = useRef(null)
   const statues = [
@@ -173,7 +173,7 @@ const Template: React.FC<TemplateProps> = ({}) => {
     <div className='flex flex-wrap gap-2 align-items-center justify-between'>
       <h4 className='m-0'>Templates</h4>
       <span className='p-input-icon-left flex'>
-        <InputText type='search' onInput={(e) => setGlobalFilter(e.target?.value)} placeholder='Search...' />
+        <InputText type='search' onInput={(e) => setGlobalFilter(e.currentTarget?.value)} placeholder='Search...' />
       </span>
     </div>
   )
@@ -204,7 +204,8 @@ const Template: React.FC<TemplateProps> = ({}) => {
     }
   }
   const statusBodyTemplate = (rowData: ModelTemplate) => {
-    return <Tag value={rowData.status} severity={rowData.status == 'active' ? 'success' : 'waring'}></Tag>
+    const type = rowData.status == 'active' ? 'success' : 'waring'
+    return <Tag value={rowData.status} severity={type as 'success' | 'warning'}></Tag>
   }
   const actionBodyTemplate = (rowData: ModelTemplate) => {
     return (
@@ -235,7 +236,11 @@ const Template: React.FC<TemplateProps> = ({}) => {
             ref={dt}
             value={templates}
             selection={selectedTemplates}
-            onSelectionChange={(e) => setSelectedTemplates(e.value as ModelTemplate)}
+            onSelectionChange={(e) => {
+              if (Array.isArray(e.value)) {
+                setSelectedTemplates(e.value)
+              }
+            }}
             dataKey='id'
             paginator
             rows={10}

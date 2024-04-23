@@ -12,7 +12,6 @@ import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown'
 import { InputText } from 'primereact/inputtext'
 import { Tag } from 'primereact/tag'
 import { Toast } from 'primereact/toast'
-import { Toolbar } from 'primereact/toolbar'
 import { classNames } from 'primereact/utils'
 import React, { useEffect, useRef, useState } from 'react'
 
@@ -27,17 +26,18 @@ const Client: React.FC<ClientProps> = ({}) => {
   const emptyClient: ModelClient = {
     name: '',
     serverId: '',
-    templateId: ''
+    templateId: '',
+    apiKey: ''
   }
-  const [clients, setClients] = useState<ModelClient[] | null>(null)
+  const [clients, setClients] = useState<ModelClient[] | undefined>(undefined)
   const [clientDialog, setClientDialog] = useState(false)
   const [dupClientDialog, setDupClientDialog] = useState(false)
   const [deleteClientDialog, setDeleteClientDialog] = useState(false)
   const [deleteClientsDialog, setDeleteClientsDialog] = useState(false)
   const [client, setClient] = useState<ModelClient>(emptyClient)
-  const [selectedClients, setSelectedClients] = useState<ModelClient | null>(null)
+  const [selectedClients, setSelectedClients] = useState<ModelClient[]>([])
   const [submitted, setSubmitted] = useState(false)
-  const [globalFilter, setGlobalFilter] = useState(null)
+  const [globalFilter, setGlobalFilter] = useState<string>('')
   const toast = useRef(null)
   const dt = useRef(null)
   const queryClient = useQueryClient()
@@ -180,10 +180,16 @@ const Client: React.FC<ClientProps> = ({}) => {
     _client[name] = val
     setClient(_client)
   }
+  const header = (
+    <div className='flex flex-wrap gap-2 align-items-center justify-between'>
+      <h4 className='m-0'>Clients</h4>
 
-  const leftToolbarClient = () => {
-    return (
-      <div className='flex flex-wrap gap-2'>
+      <div className='flex gap-2'>
+        <div>
+          <span className='p-input-icon-left flex'>
+            <InputText type='search' onInput={(e) => setGlobalFilter(e.currentTarget?.value)} placeholder='Search...' />
+          </span>
+        </div>
         <Button label='New' size='small' icon='pi pi-plus' severity='success' onClick={openNew} />
         <Button
           label='Delete'
@@ -191,17 +197,9 @@ const Client: React.FC<ClientProps> = ({}) => {
           icon='pi pi-trash'
           severity='danger'
           // onClick={confirmDeleteSelected}
-          // disabled={!selectedProducts || !selectedProducts.length}
+          disabled={!selectedClients || !selectedClients.length}
         />
       </div>
-    )
-  }
-  const header = (
-    <div className='flex flex-wrap gap-2 align-items-center justify-between'>
-      <h4 className='m-0'>Clients</h4>
-      <span className='p-input-icon-left flex'>
-        <InputText type='search' onInput={(e) => setGlobalFilter(e.target?.value)} placeholder='Search...' />
-      </span>
     </div>
   )
   const clientDialogFooter = (
@@ -258,20 +256,23 @@ const Client: React.FC<ClientProps> = ({}) => {
       <BreadCrumb model={items} home={home} />
       <div>
         <Toast ref={toast} />
-        <div className='card'>
-          <Toolbar className='mb-4' left={leftToolbarClient}></Toolbar>
+        <div className='card mt-3'>
           <DataTable
             ref={dt}
             value={clients}
             selection={selectedClients}
-            onSelectionChange={(e) => setSelectedClients(e.value as ModelClient)}
+            onSelectionChange={(e) => {
+              if (Array.isArray(e.value)) {
+                setSelectedClients(e.value)
+              }
+            }}
             dataKey='id'
             paginator
             rows={10}
             size='small'
             rowsPerPageOptions={[5, 10, 25]}
-            paginatorClient='FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown'
-            currentPageReportClient='Showing {first} to {last} of {totalRecords} Clients'
+            paginatorTemplate='FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown'
+            currentPageReportTemplate='Showing {first} to {last} of {totalRecords} Clients'
             globalFilter={globalFilter}
             header={header}
           >

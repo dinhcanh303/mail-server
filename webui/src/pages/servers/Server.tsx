@@ -16,6 +16,7 @@ import { Toolbar } from 'primereact/toolbar'
 import { classNames } from 'primereact/utils'
 import React, { useEffect, useRef, useState } from 'react'
 import { FloatLabel } from 'primereact/floatlabel'
+import { testSendMail } from '@/apis/mail.api'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface ServerProps {}
@@ -41,17 +42,18 @@ const Server: React.FC<ServerProps> = ({}) => {
     retries: 5,
     waitTimeout: 10
   }
-  const [servers, setServers] = useState(null)
+  const [servers, setServers] = useState<ModelServer[] | undefined>(undefined)
   const [toEmail, setToEmail] = useState<string>('')
+  const [logEmail, setLogEmail] = useState<string>('')
   const [serverDialog, setServerDialog] = useState(false)
   const [dupServerDialog, setDupServerDialog] = useState(false)
   const [testConnection, setTestConnection] = useState(false)
   const [deleteServerDialog, setDeleteServerDialog] = useState(false)
   const [deleteServersDialog, setDeleteServersDialog] = useState(false)
   const [server, setServer] = useState<ModelServer>(emptyServer)
-  const [selectedServers, setSelectedServers] = useState<ModelServer | null>(null)
+  const [selectedServers, setSelectedServers] = useState<ModelServer[]>([])
   const [submitted, setSubmitted] = useState(false)
-  const [globalFilter, setGlobalFilter] = useState(null)
+  const [globalFilter, setGlobalFilter] = useState<string>('')
   const toast = useRef(null)
   const dt = useRef(null)
   const tlsTypes = [
@@ -60,8 +62,8 @@ const Server: React.FC<ServerProps> = ({}) => {
     { name: 'SSL/TLS', value: 'TLS' }
   ]
   const authProtocols = [
+    { name: 'Login', value: 'login' },
     { name: 'Plain', value: 'plain' },
-    // { name: 'Login', value: 'login' },
     { name: 'CRAM-MD5', value: 'cram-md5' }
   ]
   const queryClient = useQueryClient()
@@ -130,6 +132,30 @@ const Server: React.FC<ServerProps> = ({}) => {
       toast?.current?.show({ severity: 'error', summary: 'Failed', detail: 'Client Updated Failed', life: 3000 })
     }
   }
+  const handleTestMailConnection = async () => {
+    try {
+      const res = await testSendMail({
+        authProtocol: server.authProtocol,
+        fromAddress: server.fromAddress,
+        fromName: server.fromName,
+        host: server.host,
+        maxConnections: server.maxConnections,
+        password: server.password,
+        idleTimeout: server.idleTimeout,
+        port: server.port,
+        retries: server.retries,
+        tlsType: server.tlsType,
+        username: server.username,
+        to: toEmail,
+        waitTimeout: server.waitTimeout
+      })
+      if (res?.status == 200) {
+        setLogEmail('Send Mail Successfully')
+      }
+    } catch (error) {
+      setLogEmail(`Send Mail Failed:: ${error?.message}`)
+    }
+  }
 
   const editServer = (server: ModelServer) => {
     setServer({ ...server })
@@ -195,7 +221,7 @@ const Server: React.FC<ServerProps> = ({}) => {
     <div className='flex flex-wrap gap-2 align-items-center justify-between'>
       <h4 className='m-0'>Servers</h4>
       <span className='p-input-icon-left flex'>
-        <InputText type='search' onInput={(e) => setGlobalFilter(e.target?.value)} placeholder='Search...' />
+        <InputText type='search' onInput={(e) => setGlobalFilter(e.currentTarget?.value)} placeholder='Search...' />
       </span>
     </div>
   )
@@ -231,7 +257,8 @@ const Server: React.FC<ServerProps> = ({}) => {
     }
   }
   const tlsTypeBodyTemplate = (rowData: ModelServer) => {
-    return <Tag value={rowData.tlsType} severity={rowData.tlsType == 'TLS' ? 'success' : 'waring'}></Tag>
+    const type = rowData.tlsType == 'TLS' ? 'success' : 'waring'
+    return <Tag value={rowData.tlsType} severity={type as 'success' | 'warning'}></Tag>
   }
   const actionBodyTemplate = (rowData: ModelServer) => {
     return (
@@ -262,7 +289,11 @@ const Server: React.FC<ServerProps> = ({}) => {
             ref={dt}
             value={servers}
             selection={selectedServers}
-            onSelectionChange={(e) => setSelectedServers(e.value as ModelServer)}
+            onSelectionChange={(e) => {
+              if (Array.isArray(e.value)) {
+                setSelectedServers(e.value)
+              }
+            }}
             dataKey='id'
             paginator
             rows={10}
@@ -526,9 +557,10 @@ const Server: React.FC<ServerProps> = ({}) => {
                 <label htmlFor='toEmail'>To Email</label>
               </FloatLabel>
               <div>
-                <Button label='Send Mail' icon='pi pi-check' onClick={handleDuplicateServer} />
+                <Button label='Send Mail' icon='pi pi-check' onClick={handleTestMailConnection} />
               </div>
             </div>
+            <span className='text-red-500'>{logEmail}</span>
           </div>
         </Dialog>
 

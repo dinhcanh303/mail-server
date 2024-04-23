@@ -4,12 +4,18 @@ const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'))
 const Server = lazy(() => import('@/pages/servers/Server'))
 const Template = lazy(() => import('@/pages/templates/Template'))
 const Client = lazy(() => import('@/pages/clients/Client'))
+const History = lazy(() => import('@/pages/histories/History'))
 
 const coreRoutes = [
   {
     path: '/',
     title: 'Dashboard',
     component: Dashboard
+  },
+  {
+    path: '/clients',
+    title: 'Clients',
+    component: Client
   },
   {
     path: '/servers',
@@ -22,9 +28,9 @@ const coreRoutes = [
     component: Template
   },
   {
-    path: '/clients',
-    title: 'Clients',
-    component: Client
+    path: '/histories',
+    title: 'Histories',
+    component: History
   }
 ]
 
