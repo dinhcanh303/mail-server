@@ -15,20 +15,6 @@ No. | Service | URL
 1 | gRPC Gateway | [http://localhost:5000](http://localhost:5000)
 2 | Mail Service | [http://localhost:5001](http://localhost:5001)
 3 | Web | loading...
-## Clean Architecture
-![clean-architecture](docs/clean_architecture.jpg)
-### Explain Clean Architecture
-- Clean Architecture is a multi-layered architecture.
-- Isolate Business Rules. Similar to Hexagonal and Onion architecture.
-- The concentric circles represent layers, the closer to the center 
-the more abstract (high level), and the further out the more detailed (low level).
-- Dependency Inversion (DI) in SOLID
-    High level will not depend on low level, both depend on abstraction/interface.
-    Abstraction does not depend on details but vice versa.
-#### Note 
-- ---> In Clean Architecture arrows is Dependency Direction , not call direction.
-## Clean Domain-driven Design
-![clean-ddd](docs/clean_ddd.svg)
 
 ## Development
 ### Install tools
@@ -98,10 +84,6 @@ Start docker core include (postgres , redis, rabbitmq, etc)
 ```bash
 make docker-core
 ```
-Start docker multi-service (group,post,like, etc)
-```bash
-make docker
-```
 #### Run 
 ```bash
 make run
@@ -110,8 +92,6 @@ make run
 ```bash
 make test
 ```
-## Step By Step Create Service
-- [Documents](docs/step_by_step_service.md)
 
 
 
